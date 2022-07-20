@@ -13,6 +13,7 @@ from datetime import datetime
 from datetime import timedelta
 from pathlib import Path
 from openpyxl import Workbook, load_workbook
+from PIL import Image
 
 ###### CONECTANDO PLANILHAS ##########
 
@@ -67,6 +68,11 @@ today = today.strftime('%d/%m/%Y')
 
 filenames=[]
 
+with st.sidebar:
+
+    image = Image.open('logo-cemagL.png')
+    st.image(image, width=300)
+
 with st.form(key='my_form'):
     
     with st.sidebar:
@@ -80,7 +86,6 @@ with st.form(key='my_form'):
         
         att_apontamento = st.selectbox('Atualizar Apontamento', ['Selecione','Atualizar', 'Não Atualizar'])
 
-        
         submit_button = st.form_submit_button(label='Gerar')
 
 if submit_button:
@@ -141,15 +146,9 @@ if submit_button:
         
         #filtrando datas
         
-        #for ano in range(0,len(base_carga)):
-        #    base_carga['Ano'] = base_carga['Datas'][ano][6:8]
-        
-        #for vinte_dois in range(0,len(base_carga)):
-        #    base_carga['Datas'][vinte_dois] = base_carga['Datas'][vinte_dois][0:6]
-        #    base_carga['Datas'][vinte_dois] = base_carga['Datas'][vinte_dois] + base_carga['Ano'][vinte_dois]
-        
         #tipo_filtro = st.date_input('Data: ')
         
+        #tipo_filtro = '28/07/2022'
         #tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
         
         datas_unique = pd.DataFrame(base_carga['Datas'].unique())
@@ -314,7 +313,7 @@ if submit_button:
             
             if att_apontamento == "Atualizar":
                 
-                tab_completa['Carimbo'] = ''
+                tab_completa['Carimbo'] = tipo_filtro + 'Pintura'
                 tab_completa['Tinta'] = ''
                 tab_completa['Data_carga'] = tipo_filtro
                 
@@ -795,4 +794,13 @@ if submit_button:
                 controle_seq = pd.DataFrame(lista_controle)
                 
                 controle_seq = controle_seq.values.tolist()
-                sh.values_append('Controle', {'valueInputOption': 'RAW'}, {'values': controle_seq})                      
+                sh.values_append('Controle', {'valueInputOption': 'RAW'}, {'values': controle_seq})   
+
+
+    st.write("Resumo:")
+    base_carga_filtro = base_carga.query("Datas == @tipo_filtro")
+    base_carga_filtro.dropna(inplace=True)
+    base_carga_filtro = base_carga_filtro[['Recurso','Qtde']]
+    base_carga_filtro = base_carga_filtro.groupby('Recurso').sum()
+    base_carga_filtro
+    tab_completa[['Célula','Código','Peca','Qtde_total']]      
