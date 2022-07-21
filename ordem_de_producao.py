@@ -20,21 +20,20 @@ from PIL import Image
 st.title('Gerador de Ordem de Produção')
 
 name_sheet = 'Bases para sequenciamento'
+
 worksheet1 = 'Base_Carretas'
 worksheet2 = 'Carga_Vendas'
 
-name_sheet1 = 'Bases para sequenciamento'
 worksheet3 = 'Base_Carretas'
 
 filename = "service_account.json"
 
 sa = gspread.service_account(filename)
 sh = sa.open(name_sheet)
-sh1 = sa.open(name_sheet1)
 
 wks1 = sh.worksheet(worksheet1)
 wks2 = sh.worksheet(worksheet2)
-wks3 = sh1.worksheet(worksheet3)
+wks3 = sh.worksheet(worksheet3)
 
 #obtendo todos os valores da planilha
 list1 = wks1.get_all_records()
@@ -55,7 +54,10 @@ base_carga['PED_PREVISAOEMISSAODOC'] = base_carga.PED_PREVISAOEMISSAODOC.dt.strf
 
 ####renomeando colunas#####
 
-base_carga = base_carga.rename(columns={'PED_PREVISAOEMISSAODOC': 'Datas', '3o. Agrupamento': 'Carga','PED_RECURSO.CODIGO': 'Recurso', 'PED_QUANTIDADE':'Qtde'})
+base_carga = base_carga.rename(columns={'PED_PREVISAOEMISSAODOC': 'Datas',
+                                        '3o. Agrupamento': 'Carga',
+                                        'PED_RECURSO.CODIGO': 'Recurso',
+                                        'PED_QUANTIDADE':'Qtde'})
 
 #####Valores nulos######
 
@@ -796,11 +798,11 @@ if submit_button:
                 controle_seq = controle_seq.values.tolist()
                 sh.values_append('Controle', {'valueInputOption': 'RAW'}, {'values': controle_seq})   
 
-
     st.write("Resumo:")
     base_carga_filtro = base_carga.query("Datas == @tipo_filtro")
     base_carga_filtro.dropna(inplace=True)
     base_carga_filtro = base_carga_filtro[['Recurso','Qtde']]
+    base_carga_filtro['Qtde'] = base_carga_filtro['Qtde'].astype(int)
     base_carga_filtro = base_carga_filtro.groupby('Recurso').sum()
-    base_carga_filtro
+    
     tab_completa[['Célula','Código','Peca','Qtde_total']]      
