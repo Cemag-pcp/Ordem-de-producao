@@ -469,9 +469,9 @@ if submit_button:
                     k = k + 1
                     
                     wb.template = False
-                    wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
+                    wb.save('Montagem ' + celulas_unique[0][i] + '1.xlsx')
                
-                my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                my_file = "Montagem " + celulas_unique[0][i] +'.1xlsx'
                 filenames.append(my_file)                
               
                 k = 9
