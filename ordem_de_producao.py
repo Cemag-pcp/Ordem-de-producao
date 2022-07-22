@@ -70,6 +70,11 @@ today = today.strftime('%d/%m/%Y')
 
 filenames=[]
 
+def unique(list1):
+    x = np.array(list1)
+    print(np.unique(x))
+
+
 with st.sidebar:
 
     image = Image.open('logo-cemagL.png')
@@ -81,6 +86,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
+        #tipo_filtro = "29/07/2022"
         values = ['Selecione','Pintura','Montagem','Solda']
         setor = st.selectbox('Escolha o setor', values)
         
@@ -470,10 +476,10 @@ if submit_button:
                     
                     wb.template = False
                     wb.save('Montagem ' + celulas_unique[0][i] + '1.xlsx')
-               
-                my_file = "Montagem " + celulas_unique[0][i] +'.1xlsx'
-                filenames.append(my_file)                
-              
+           
+                    my_file = "Montagem " + celulas_unique[0][i] +'1.xlsx'
+                    filenames.append(my_file)                
+                      
                 k = 9
                 
                 wb = Workbook()
@@ -514,8 +520,8 @@ if submit_button:
                         
                         wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
 
-                my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
-                filenames.append(my_file)              
+                        my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                        filenames.append(my_file)              
 
             else:
                 
@@ -548,10 +554,10 @@ if submit_button:
                     wb.template = False
                     wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
                     
-                k = 9 
+                    k = 9 
                 
-                my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
-                filenames.append(my_file)
+                    my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                    filenames.append(my_file)
     
     if setor == 'Solda':   
     
@@ -651,9 +657,6 @@ if submit_button:
         st.write("Arquivos para download")    
         
         k = 9
-        
-        
-        
         
         for i in range(0,len(celulas_unique)):
          
@@ -771,9 +774,11 @@ if submit_button:
                 my_file = "Solda " + celulas_unique[0][i] +'.xlsx'
                 
                 filenames.append(my_file)
+        
+    filenames_unique = list(set(filenames))
     
     with zipfile.ZipFile("Arquivos.zip", mode="w") as archive:
-        for filename in filenames:
+        for filename in filenames_unique:
             archive.write(filename)
     
     with open("Arquivos.zip", "rb") as fp:
