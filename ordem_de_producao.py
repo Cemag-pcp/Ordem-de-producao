@@ -245,7 +245,7 @@ if submit_button:
                 for j in range(0,21):
                  
                     ws['F5'] = cor_unique[i] # nome da coluna é '0'
-                    ws['AD5'] = datetime.datetime.now() #  data de hoje
+                    ws['AD5'] = datetime.now() #  data de hoje
                     ws['M4']  = tipo_filtro  # data da carga
                     ws['B' + str(k)] = filtrar['Recurso_cor'][j]
                     ws['G' + str(k)] = filtrar['Peca'][j]
