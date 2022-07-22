@@ -308,7 +308,6 @@ if submit_button:
                 k = 9
                 
                 my_file = "Pintura " + cor_unique[i] +'.xlsx'
-                
                 filenames.append(my_file)
                         
         with st.sidebar:
