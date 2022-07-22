@@ -471,7 +471,10 @@ if submit_button:
                     
                     wb.template = False
                     wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
-                        
+               
+                my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                filenames.append(my_file)                
+              
                 k = 9
                 
                 wb = Workbook()
@@ -511,7 +514,10 @@ if submit_button:
                         k = k + 1
                         
                         wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
-                
+             
+                  my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                  filenames.append(my_file)              
+
             else:
                 
                 j = 0
@@ -546,7 +552,6 @@ if submit_button:
                 k = 9 
                 
                 my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
-            
                 filenames.append(my_file)
     
     if setor == 'Solda':   
