@@ -19,6 +19,9 @@ from PIL import Image
 
 st.title('Gerador de Ordem de Produção')
 
+st.write("Planilha usada para gerar as ordens de produção")
+st.write("https://docs.google.com/spreadsheets/d/18ZXL8n47qSLFLVO5tBj7-ADpqmMyFwCgs4cxxtBB9Xo/edit#gid=0")
+
 name_sheet = 'Bases para sequenciamento'
 
 worksheet1 = 'Base_Carretas'
