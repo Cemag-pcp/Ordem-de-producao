@@ -86,7 +86,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "29/07/2022"
+        #tipo_filtro = "01/08/2022"
         values = ['Selecione','Pintura','Montagem','Solda']
         setor = st.selectbox('Escolha o setor', values)
         
@@ -259,8 +259,6 @@ if submit_button:
                     k = k + 1
                     
                     wb.template = False
-                    #path = Path(r'\\cemag-server\Cemag\Grupos\Usinagem\5.SEQUENCIAMENTO\Sequenciamento Pintura\ ' + tipo_filtro.replace('/', '-')) 
-                    #path.mkdir(parents=True, exist_ok=True)
                     wb.save("Pintura " + cor_unique[i] +'.xlsx')
                     
                 k = 9
@@ -477,8 +475,8 @@ if submit_button:
                     wb.template = False
                     wb.save('Montagem ' + celulas_unique[0][i] + '1.xlsx')
            
-                    my_file = "Montagem " + celulas_unique[0][i] +'1.xlsx'
-                    filenames.append(my_file)                
+                my_file = "Montagem " + celulas_unique[0][i] +'1.xlsx'
+                filenames.append(my_file)                
                       
                 k = 9
                 
@@ -520,8 +518,8 @@ if submit_button:
                         
                         wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
 
-                        my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
-                        filenames.append(my_file)              
+                    my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                    filenames.append(my_file)              
 
             else:
                 
@@ -553,9 +551,7 @@ if submit_button:
                     
                     wb.template = False
                     wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
-                    
-                    k = 9 
-                
+                                    
                     my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
                     filenames.append(my_file)
     
