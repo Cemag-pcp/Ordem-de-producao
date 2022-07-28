@@ -262,8 +262,11 @@ if submit_button:
                     k = k + 1
                     
                     wb.template = False
-                    wb.save("Pintura " + cor_unique[i] +'.xlsx')
+                    wb.save("Pintura " + cor_unique[i] +'1.xlsx')
                     
+                my_file = "Pintura " + cor_unique[i] +'1.xlsx'
+                filenames.append(my_file)                       
+                
                 k = 9
                 
                 wb = Workbook()
@@ -291,7 +294,10 @@ if submit_button:
                         ws['AD' + str(k)] = filtrar['Qtde_total'][j]
                         k = k + 1
                         
-                        wb.save("Pintura " + cor_unique[i] +'.xlsx')        
+                        wb.save("Pintura " + cor_unique[i] +'.xlsx') 
+                        
+                    my_file = "Pintura " + cor_unique[i] +'.xlsx'
+                    filenames.append(my_file)              
             
             else:
                 
@@ -308,9 +314,10 @@ if submit_button:
                     k = k + 1
                     
                     wb.template = False
-                    #path = Path(r'\\cemag-server\Cemag\Grupos\Usinagem\5.SEQUENCIAMENTO\Sequenciamento Pintura\ ' + tipo_filtro.replace('/', '-')) 
-                    #path.mkdir(parents=True, exist_ok=True)
                     wb.save("Pintura " + cor_unique[i] +'.xlsx')
+                    
+                    my_file = "Pintura " + cor_unique[i] +'.xlsx'
+                    filenames.append(my_file)                    
                     
                 k = 9
                 
