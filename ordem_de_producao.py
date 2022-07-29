@@ -89,7 +89,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "01/08/2022"
+        #tipo_filtro = "29/07/2022"
         values = ['Selecione','Pintura','Montagem','Solda']
         setor = st.selectbox('Escolha o setor', values)
         
@@ -154,13 +154,6 @@ if submit_button:
         base_carga['Recurso']=base_carga['Recurso'].str.replace('AV','') # Amarelo
         
         base_carga['Recurso'] = base_carga['Recurso'].str.strip()
-        
-        #filtrando datas
-        
-        #tipo_filtro = st.date_input('Data: ')
-        
-        #tipo_filtro = '28/07/2022'
-        #tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
         
         datas_unique = pd.DataFrame(base_carga['Datas'].unique())
             
@@ -436,7 +429,7 @@ if submit_button:
         
         ts = pd.Timestamp(hoje)
         
-        hoje1 = hoje.strftime('%d%m%Y') #/
+        hoje1 = hoje.strftime('%d%m%Y')
         
         controle_seq = tab_completa
         controle_seq["codigo"] = hoje1 + tipo_filtro    
@@ -444,9 +437,9 @@ if submit_button:
         st.write("Arquivos para download")
         
         k = 9
-        
+
         for i in range(0,len(celulas_unique)):
-         
+            
             wb = Workbook()
             wb = load_workbook('modelo_op_montagem.xlsx')
             ws = wb.active
@@ -487,7 +480,7 @@ if submit_button:
            
                 my_file = "Montagem " + celulas_unique[0][i] +'1.xlsx'
                 filenames.append(my_file)                
-                      
+                
                 k = 9
                 
                 wb = Workbook()
@@ -500,9 +493,9 @@ if submit_button:
                 filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
         
                 if len(filtrar) > 21:
-                    
+
                     j = 21
-                    
+
                     for j in range(21,len(filtrar)):
                      
                         ws['G5'] = celulas_unique[0][i] # nome da coluna é '0'
@@ -526,6 +519,7 @@ if submit_button:
                         ws['AD' + str(k)] = filtrar['Qtde_total'][j]
                         k = k + 1
                         
+                        wb.template = False
                         wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
 
                     my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
@@ -535,6 +529,7 @@ if submit_button:
                 
                 j = 0
                 k = 9
+                    
                 for j in range(0,21-(21-len(filtrar))):
                  
                     ws['G5'] = celulas_unique[0][i] # nome da coluna é '0'
@@ -561,10 +556,12 @@ if submit_button:
                     
                     wb.template = False
                     wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
-                                    
-                    my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
-                    filenames.append(my_file)
-    
+                
+                k = 9
+                    
+                my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
+                filenames.append(my_file)
+               
     if setor == 'Solda':   
     
         #####colunas de códigos#####
@@ -702,7 +699,10 @@ if submit_button:
                     k = k + 1
                     
                     wb.template = False
-                    wb.save('Solda ' + celulas_unique[0][i] + '.xlsx')
+                    wb.save('Solda ' + celulas_unique[0][i] + '1.xlsx')
+                
+                my_file = "Solda " + celulas_unique[0][i] +'1.xlsx'
+                filenames.append(my_file) 
                     
                 k = 9
                 
@@ -778,7 +778,7 @@ if submit_button:
                 k = 9
                 
                 my_file = "Solda " + celulas_unique[0][i] +'.xlsx'
-                
+
                 filenames.append(my_file)
         
     filenames_unique = list(set(filenames))
