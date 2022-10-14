@@ -205,6 +205,7 @@ if submit_button:
         tab_completa = tab_completa.groupby(['Código','Peca','Célula','Datas','Recurso_cor','cor']).sum()
         tab_completa.reset_index(inplace=True)
         
+        #linha abaixo exclui eixo simples do sequenciamento da pintura
         #tab_completa.drop(tab_completa.loc[tab_completa['Célula']=='EIXO SIMPLES'].index, inplace=True)
         tab_completa.reset_index(inplace=True, drop=True)
         
