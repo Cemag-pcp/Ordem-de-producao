@@ -821,4 +821,4 @@ if submit_button:
     base_carga_filtro['Qtde'] = base_carga_filtro['Qtde'].astype(int)
     base_carga_filtro = base_carga_filtro.groupby('Recurso').sum()
     
-    tab_completa[['Célula','Código','Peca','Qtde_total']]      
+    tab_completa[['Célula','Código','Peca','Qtde_total', 'cor']]      
