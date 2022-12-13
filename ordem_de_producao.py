@@ -89,7 +89,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "29/07/2022"
+        #tipo_filtro = "12/12/2022"
         values = ['Selecione','Pintura','Montagem','Solda']
         setor = st.selectbox('Escolha o setor', values)
         
@@ -562,6 +562,27 @@ if submit_button:
                     
                 my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
                 filenames.append(my_file)
+            
+        if att_apontamento == "Atualizar":
+            
+            tab_completa['Carimbo'] = tipo_filtro + 'Montagem'
+            tab_completa['Data_carga'] = tipo_filtro
+            
+            tab_completa1 = tab_completa[['Carimbo','Célula','Peca']]
+            
+            tab_completa1['Data_carga'] = tipo_filtro
+            
+            tab_completa1 = tab_completa1.astype(str)
+            
+            name_sheet1 = 'RQ PC-005-002 APONTAMENTO PINTURA M22'
+            worksheet3 = 'Montagem'
+            
+            sa = gspread.service_account(filename)
+            sh = sa.open(name_sheet1)
+            
+            tab_completa1 = tab_completa1.values.tolist()
+            
+            sh.values_append('Sequenciamento automatico -> L', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
                
     if setor == 'Solda':   
     
@@ -822,3 +843,4 @@ if submit_button:
     base_carga_filtro = base_carga_filtro.groupby('Recurso').sum()
     
     tab_completa[['Célula','Código','Peca','Qtde_total', 'cor']]      
+
