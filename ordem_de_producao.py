@@ -19,8 +19,11 @@ from PIL import Image
 
 st.title('Gerador de Ordem de Produção')
 
-st.write("Planilha usada como base para gerar as ordens de produção")
+st.write("Base para gerar as ordens de produção")
 st.write("https://docs.google.com/spreadsheets/d/18ZXL8n47qSLFLVO5tBj7-ADpqmMyFwCgs4cxxtBB9Xo/edit#gid=0")
+
+st.write("Planilha que guarda ordens geradas")
+st.write("https://docs.google.com/spreadsheets/d/1IOgFhVTBtlHNBG899QqwlqxYlMcucTx74zRA29YBHKA/edit#gid=1228486917")
 
 name_sheet = 'Bases para sequenciamento'
 
@@ -315,7 +318,7 @@ if submit_button:
                 my_file = "Pintura " + cor_unique[i] +'.xlsx'
                 filenames.append(my_file)
                 
-                name_sheet4 = 'RQ PC-005-002 APONTAMENTO PINTURA M22'
+                name_sheet4 = 'Base gerador de ordem de producao'
                 worksheet4 = 'Pintura'
                 
                 sh = sa.open(name_sheet4)
@@ -566,7 +569,7 @@ if submit_button:
                 my_file = "Montagem " + celulas_unique[0][i] +'.xlsx'
                 filenames.append(my_file)
                     
-        name_sheet4 = 'RQ PC-005-002 APONTAMENTO PINTURA M22'
+        name_sheet4 = 'Base gerador de ordem de producao'
         worksheet4 = 'Montagem'
         
         sh = sa.open(name_sheet4)
@@ -824,7 +827,7 @@ if submit_button:
 
                 filenames.append(my_file)
         
-        name_sheet4 = 'RQ PC-005-002 APONTAMENTO PINTURA M22'
+        name_sheet4 = 'Base gerador de ordem de producao'
         worksheet4 = 'Solda'
         
         sh = sa.open(name_sheet4)
@@ -1084,7 +1087,7 @@ if submit_button:
                 my_file = "Serralheria " + celulas_unique[0][i] +'.xlsx'
                 filenames.append(my_file)
                 
-        name_sheet4 = 'RQ PC-005-002 APONTAMENTO PINTURA M22'
+        name_sheet4 = 'Base gerador de ordem de producao'
         worksheet4 = 'Serralheria'
         
         sh = sa.open(name_sheet4)
@@ -1344,7 +1347,7 @@ if submit_button:
                 my_file = "Carpintaria " + celulas_unique[0][i] +'.xlsx'
                 filenames.append(my_file)
                 
-        name_sheet4 = 'RQ PC-005-002 APONTAMENTO PINTURA M22'
+        name_sheet4 = 'Base gerador de ordem de producao'
         worksheet4 = 'Carpintaria'
         
         sh = sa.open(name_sheet4)
@@ -1408,4 +1411,3 @@ if submit_button:
         tab_completa[['Célula','Código','Peca','Qtde_total', 'cor']]      
     except:
         tab_completa[['Célula','Código','Peca','Qtde_total']]      
-
