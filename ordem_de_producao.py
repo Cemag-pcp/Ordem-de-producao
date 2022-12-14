@@ -95,7 +95,7 @@ with st.form(key='my_form'):
         #tipo_filtro = "20/12/2022"
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria']
         setor = st.selectbox('Escolha o setor', values)
-        #setor = 'Serralheria'
+        #setor = 'Pintura'
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -344,7 +344,7 @@ if submit_button:
                 frames = [table, tab_completa_2]
                 table = pd.concat(frames)
                 table = table.drop_duplicates(keep=False)
-                table = table.astype(str)
+                table['QT_ITENS'] = table['QT_ITENS'].astype(int)
                 tab_completa1 = table.values.tolist()
                 sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
     
@@ -602,7 +602,7 @@ if submit_button:
         frames = [table, tab_completa_2]
         
         table = pd.concat(frames)
-        table = table.astype(str)
+        table['QT_ITENS'] = table['QT_ITENS'].astype(int)
         table = table.drop_duplicates(keep=False)
         
         tab_completa1 = table.values.tolist()
@@ -860,7 +860,7 @@ if submit_button:
         frames = [table, tab_completa_2]
         
         table = pd.concat(frames)
-        table = table.astype(str)
+        table['QT_ITENS'] = table['QT_ITENS'].astype(int)
         table = table.drop_duplicates(keep=False)
         
         tab_completa1 = table.values.tolist()
@@ -1120,7 +1120,7 @@ if submit_button:
         frames = [table, tab_completa_2]
         
         table = pd.concat(frames)
-        table = table.astype(str)
+        table['QT_ITENS'] = table['QT_ITENS'].astype(int)
         table = table.drop_duplicates(keep=False)
         
         tab_completa1 = table.values.tolist()
@@ -1380,7 +1380,7 @@ if submit_button:
         frames = [table, tab_completa_2]
         
         table = pd.concat(frames)
-        table = table.astype(str)
+        table['QT_ITENS'] = table['QT_ITENS'].astype(int)
         table = table.drop_duplicates(keep=False)
         
         tab_completa1 = table.values.tolist()
