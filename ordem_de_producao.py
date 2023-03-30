@@ -92,7 +92,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "20/12/2022"
+        #tipo_filtro = "04/04/2023"
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria']
         setor = st.selectbox('Escolha o setor', values)
         #setor = 'Pintura'
@@ -224,14 +224,14 @@ if submit_button:
                 
         ###########################################################################################
         
-        k = 9
-        
         cor_unique = tab_completa['cor'].unique()
         
         st.write("Arquivos para download")
         
         for i in range(0,len(cor_unique)):
             
+            k = 9
+
             wb = Workbook()
             wb = load_workbook('modelo_op_pintura.xlsx')
             ws = wb.active
