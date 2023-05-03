@@ -188,6 +188,8 @@ if submit_button:
                 
         #criando coluna de quantidade total de itens
         
+        tab_completa = tab_completa.dropna()
+        
         tab_completa['Qtde_x'] = tab_completa['Qtde_x'].str.replace(',','.')
         
         tab_completa['Qtde_x'] = tab_completa['Qtde_x'].astype(float)
