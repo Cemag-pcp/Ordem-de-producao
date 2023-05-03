@@ -32,6 +32,7 @@ worksheet2 = 'Carga_Vendas'
 
 worksheet3 = 'Base_Carretas'
 
+#filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
 filename = "service_account.json"
 
 sa = gspread.service_account(filename)
@@ -92,7 +93,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "04/04/2023"
+        #tipo_filtro = "08/05/2023"
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria']
         setor = st.selectbox('Escolha o setor', values)
         #setor = 'Pintura'
@@ -189,7 +190,7 @@ if submit_button:
         #criando coluna de quantidade total de itens
         
         tab_completa = tab_completa.dropna()
-        
+
         tab_completa['Qtde_x'] = tab_completa['Qtde_x'].str.replace(',','.')
         
         tab_completa['Qtde_x'] = tab_completa['Qtde_x'].astype(float)
@@ -1405,6 +1406,7 @@ if submit_button:
     st.write("Resumo:")
     base_carga_filtro = base_carga.query("Datas == @tipo_filtro")
     base_carga_filtro.dropna(inplace=True)
+    base_carga_filtro = base_carga_filtro[base_carga_filtro['Qtde']!='']
     base_carga_filtro = base_carga_filtro[['Recurso','Qtde']]
     base_carga_filtro['Qtde'] = base_carga_filtro['Qtde'].astype(int)
     base_carga_filtro = base_carga_filtro.groupby('Recurso').sum()
