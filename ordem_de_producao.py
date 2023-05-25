@@ -413,8 +413,9 @@ if submit_button:
         tab_completa = pd.merge(filtro_data, base_carretas[['Recurso','Código','Peca','Qtde','Célula']], on=['Recurso'], how='left')
         tab_completa = tab_completa.dropna(axis=0)
 
+        carretas_agrupadas = filtro_data[['Recurso','Qtde']]
         carretas_agrupadas = pd.DataFrame(filtro_data.groupby('Recurso').sum())
-        carretas_agrupadas = carretas_agrupadas[['carretas_agrupadas']]
+        carretas_agrupadas = carretas_agrupadas[['Qtde']]
 
         st.dataframe(carretas_agrupadas)
     
