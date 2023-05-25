@@ -93,17 +93,19 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "08/05/2023"
+        # tipo_filtro = "01/06/2023"
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria']
         setor = st.selectbox('Escolha o setor', values)
-        #setor = 'Pintura'
+        # setor = 'Montagem'
         
         submit_button = st.form_submit_button(label='Gerar')
 
 if submit_button:
         
     if setor == 'Pintura':
-            
+        
+        base_carretas['Recurso'] = base_carretas['Recurso'].astype(str)
+
         base_carretas.drop(['Etapa','Etapa3', 'Etapa4', 'Etapa5'], axis=1, inplace=True)
         
         base_carretas.drop(base_carretas[(base_carretas['Etapa2']  == '')].index, inplace=True) # & (base_carretas['Unit_Price'] < 600)].index, inplace=True)
@@ -119,6 +121,8 @@ if submit_button:
         
         #separando string por "-" e adicionando no dataframe antigo
         
+        base_carga["Recurso"] = base_carga["Recurso"].astype(str)
+
         tratando_coluna = base_carga["Recurso"].str.split(" - ", n = 1, expand = True)
         
         base_carga['Recurso'] = tratando_coluna[0]
@@ -164,6 +168,12 @@ if submit_button:
            
         #procv e trazendo as colunas que quero ver
         
+        filtro_data = filtro_data.reset_index(drop=True)
+
+        for i in range(len(filtro_data)):
+            if filtro_data['Recurso'][i][0] == '0':
+                filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
+
         tab_completa = pd.merge(filtro_data, base_carretas, on=['Recurso'], how='left')
         
         tab_completa['Código'] = tab_completa['Código'].astype(str)
@@ -357,14 +367,18 @@ if submit_button:
         base_carretas['Recurso'] = base_carretas['Recurso'].astype(str)
     
         #######retirando cores dos códigos######
-    
+
+        base_carga['Recurso'] = base_carga['Recurso'].astype(str)
+        
         base_carga['Recurso']=base_carga['Recurso'].str.replace('AM','')
         base_carga['Recurso']=base_carga['Recurso'].str.replace('AN','')
         base_carga['Recurso']=base_carga['Recurso'].str.replace('VJ','')
         base_carga['Recurso']=base_carga['Recurso'].str.replace('LC','')
         base_carga['Recurso']=base_carga['Recurso'].str.replace('VM','')
         base_carga['Recurso']=base_carga['Recurso'].str.replace('AV','')
-    
+
+        # base_carga[base_carga['Datas'] == '01/06/2023']
+
         ######retirando espaco em branco####
     
         base_carga['Recurso'] = base_carga['Recurso'].str.strip()
@@ -382,15 +396,26 @@ if submit_button:
         ####filtrando data da carga#####
     
         datas_unique = pd.DataFrame(base_carga['Datas'].unique())
-    
+        
         escolha_data = (base_carga['Datas'] == tipo_filtro)
         filtro_data = base_carga.loc[escolha_data]
         filtro_data['Datas'] = pd.to_datetime(filtro_data.Datas)
     
+        filtro_data = filtro_data.reset_index(drop=True)
+        filtro_data['Recurso'] = filtro_data['Recurso'].astype(str)
+
+        for i in range(len(filtro_data)):
+            if filtro_data['Recurso'][i][0] == '0':
+                filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
+
         #####juntando planilhas de acordo com o recurso#######
     
         tab_completa = pd.merge(filtro_data, base_carretas[['Recurso','Código','Peca','Qtde','Célula']], on=['Recurso'], how='left')
         tab_completa = tab_completa.dropna(axis=0)
+
+        carretas_agrupadas = pd.DataFrame(filtro_data.groupby('Recurso').sum()[['Qtde']])
+
+        st.dataframe(carretas_agrupadas)
     
         tab_completa['Código'] = tab_completa['Código'].astype(str)
     
