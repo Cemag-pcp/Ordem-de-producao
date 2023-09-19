@@ -119,7 +119,7 @@ with st.form(key='my_form'):
 
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        # tipo_filtro = "19/09/2023"
+        # tipo_filtro = "20/09/2023"
         values = ['Selecione', 'Pintura', 'Montagem',
                   'Solda', 'Serralheria', 'Carpintaria']
         setor = st.selectbox('Escolha o setor', values)
@@ -281,10 +281,24 @@ if submit_button:
         # Consumo de tinta
 
         tab_completa = tab_completa.merge(df_consumo_pu[['Codigo item','Consumo Pó (kg)','Consumo PU (L)','Consumo Catalisador (L)']], left_on='Código', right_on='Codigo item', how='left').fillna(0)
-        consumo_po = round(sum(tab_completa['Consumo Pó (kg)']), 2)
-        consumo_pu = round(sum(tab_completa['Consumo PU (L)']),2)
-        consumo_cata = round(sum(tab_completa['Consumo Catalisador (L)']),2)
         
+        tab_completa['Consumo Pó (kg)'] = tab_completa['Consumo Pó (kg)'] * tab_completa['Qtde_total']
+        tab_completa['Consumo PU (L)'] = tab_completa['Consumo PU (L)'] * tab_completa['Qtde_total']
+        tab_completa['Consumo Catalisador (L)'] = tab_completa['Consumo Catalisador (L)'] * tab_completa['Qtde_total']
+
+        consumo_po = sum(tab_completa['Consumo Pó (kg)'])
+        consumo_po = f'{round(consumo_po / 25, 2)} caixa(s)'
+
+        consumo_pu_litros = sum(tab_completa['Consumo Pó (kg)'])
+        consumo_pu_latas = round(consumo_pu_litros / 3.08, 2)
+        consumo_pu = f'{consumo_pu_latas} lata(s)'
+
+        consumo_catalisador_litros = sum(tab_completa['Consumo Catalisador (L)'])
+        consumo_catalisador_latas = round(consumo_catalisador_litros * 1000 / 400, 2)
+        consumo_cata = f'{consumo_catalisador_latas} lata(s)'
+
+        diluente = f'{round((consumo_pu_litros * 0.80) / 5, 2)} lata(s)'
+
         ###########################################################################################
 
         cor_unique = tab_completa['cor'].unique()
@@ -317,9 +331,10 @@ if submit_button:
                     ws['B' + str(k)] = filtrar['Recurso_cor'][j]
                     ws['G' + str(k)] = filtrar['Peca'][j]
                     ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                    ws['AE3'] = consumo_cata
-                    ws['AL3'] = consumo_po
-                    ws['AO3'] = consumo_pu
+                    ws['K3'] = consumo_cata
+                    ws['Q3'] = consumo_po
+                    ws['AE3'] = consumo_pu
+                    ws['AN3'] = diluente
                     k = k + 1
 
                     wb.template = False
@@ -354,9 +369,10 @@ if submit_button:
                         ws['B' + str(k)] = filtrar['Recurso_cor'][j]
                         ws['G' + str(k)] = filtrar['Peca'][j]
                         ws['AD' + str(k)] = filtrar['Qtde_total'][j]    
-                        ws['AE3'] = consumo_cata
-                        ws['AL3'] = consumo_po
-                        ws['AO3'] = consumo_pu
+                        ws['K3'] = consumo_cata
+                        ws['Q3'] = consumo_po
+                        ws['AE3'] = consumo_pu
+                        ws['AN3'] = diluente
                         k = k + 1
 
                         wb.save("Pintura " + cor_unique[i] + '.xlsx')
@@ -376,9 +392,10 @@ if submit_button:
                     ws['B' + str(k)] = filtrar['Recurso_cor'][j]
                     ws['G' + str(k)] = filtrar['Peca'][j]
                     ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                    ws['AE3'] = consumo_cata
-                    ws['AL3'] = consumo_po
-                    ws['AO3'] = consumo_pu
+                    ws['K3'] = consumo_cata
+                    ws['Q3'] = consumo_po
+                    ws['AE3'] = consumo_pu
+                    ws['AN3'] = diluente
                     k = k + 1
 
                     wb.template = False
