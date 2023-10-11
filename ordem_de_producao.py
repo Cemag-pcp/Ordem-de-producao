@@ -736,14 +736,16 @@ if submit_button:
         table = table.drop_duplicates(keep=False)
         
         table = table.sort_values(by='CELULA').reset_index(drop=True)
-
-        # Crie um novo DataFrame com as linhas em branco e o valor da data
+      
+        # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
         new_rows = []
         for index, row in table.iterrows():
             new_rows.append(row)
             if index < len(table) - 1 and table.at[index, 'CELULA'] != table.at[index + 1, 'CELULA']:
                 new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
-
+            elif index == len(table) - 1:
+                new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
+        
         new_df = pd.DataFrame(new_rows).reset_index(drop=True)
 
         tab_completa1 = new_df.values.tolist()
