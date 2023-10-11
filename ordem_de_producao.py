@@ -93,7 +93,7 @@ with st.form(key='my_form'):
         
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "08/05/2023"
+        #tipo_filtro = "20/10/2023"
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria']
         setor = st.selectbox('Escolha o setor', values)
         #setor = 'Pintura'
@@ -348,6 +348,7 @@ if submit_button:
                 table = pd.concat(frames)
                 table = table.drop_duplicates(keep=False)
                 table['QT_ITENS'] = table['QT_ITENS'].astype(int)
+                
                 tab_completa1 = table.values.tolist()
                 sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
     
@@ -608,7 +609,22 @@ if submit_button:
         table['QT_ITENS'] = table['QT_ITENS'].astype(int)
         table = table.drop_duplicates(keep=False)
         
-        tab_completa1 = table.values.tolist()
+        table = table.sort_values(by='CELULA').reset_index(drop=True)
+
+        # Crie um novo DataFrame com as linhas em branco e o valor da data
+        new_rows = []
+        for index, row in table.iterrows():
+            new_rows.append(row)
+            if index < len(table) - 1 and table.at[index, 'CELULA'] != table.at[index + 1, 'CELULA']:
+                new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
+
+        new_df = pd.DataFrame(new_rows).reset_index(drop=True)
+
+        tab_completa1 = new_df.values.tolist()
+        
+        # ultima_linha = ['','','','','',tipo_filtro,'']
+        # tab_completa1.append(ultima_linha)
+
         sh.values_append('Montagem', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
     
     if setor == 'Solda':   
@@ -865,6 +881,17 @@ if submit_button:
         table = pd.concat(frames)
         table['QT_ITENS'] = table['QT_ITENS'].astype(int)
         table = table.drop_duplicates(keep=False)
+
+        table = table.sort_values(by='CELULA').reset_index(drop=True)
+
+        # Crie um novo DataFrame com as linhas em branco e o valor da data
+        new_rows = []
+        for index, row in table.iterrows():
+            new_rows.append(row)
+            if index < len(table) - 1 and table.at[index, 'CELULA'] != table.at[index + 1, 'CELULA']:
+                new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
+
+        new_df = pd.DataFrame(new_rows).reset_index(drop=True)
         
         tab_completa1 = table.values.tolist()
         sh.values_append('Solda', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
