@@ -82,6 +82,12 @@ filenames = []
 
 def gerar_etiquetas(tipo_filtro,df):
 
+    # Abra a planilha pelo seu URL (key)
+    planilha = sa.open_by_key("1jojKHPBKeALheutJyphsPS-LGNu1e2BC54AAqRnF-us")
+
+    # Acesse a aba desejada
+    aba = planilha.worksheet("etiquetas")
+
     # Criar uma coluna adicional
     # Repetir as linhas de acordo com a quantidade total
     df = df.loc[df.index.repeat(df['Qtde_total'])].reset_index(drop=True)
@@ -114,27 +120,46 @@ def gerar_etiquetas(tipo_filtro,df):
     # modelo_path = 'modelo_etiquetas.xlsx'
     # book = load_workbook(modelo_path)
 
-    wb = Workbook()
-    wb = load_workbook('modelo_etiquetas.xlsx')
-    ws = wb.active
+    # wb = Workbook()
+    # wb = load_workbook('modelo_etiquetas.xlsx')
+    # ws = wb.active
 
-    # Acessar a planilha desejada
-    sheet = wb.active
+    # # Acessar a planilha desejada
+    # sheet = wb.active
 
-    # Adicionar os valores intercalando entre as colunas A e B do Excel
-    for index, value in enumerate(df['Concatenacao'], start=1):
-        if index % 2 == 0:
-            sheet[f'B{index//2}'] = value
-        else:
-            sheet[f'A{index//2 + 1}'] = value
+    # # Adicionar os valores intercalando entre as colunas A e B do Excel
+    # for index, value in enumerate(df['Concatenacao'], start=1):
+    #     if index % 2 == 0:
+    #         sheet[f'B{index//2}'] = value
+    #     else:
+    #         sheet[f'A{index//2 + 1}'] = value
+
+    # Seus valores a serem anexados
+    valores = df['Concatenacao'].tolist()
+
+    # Separar valores pares e ímpares
+    valores_pares = valores[::2]
+    valores_impares = valores[1::2]
+
+    # Anexar à planilha
+    intervalo_pares = "etiquetas!A3:A" + str(len(valores_pares)+3)  # +3 para ajustar a contagem de linhas
+    intervalo_impares = "etiquetas!B3:B" + str(len(valores_impares)+3)  # +3 para ajustar a contagem de linhas
+
+    planilha.values_clear("etiquetas!A:B")
+
+    # Anexar valores pares
+    planilha.values_append(intervalo_pares, {'valueInputOption': 'RAW'}, {'values': [[valor] for valor in valores_pares]})
+
+    # Anexar valores ímpares
+    planilha.values_append(intervalo_impares, {'valueInputOption': 'RAW'}, {'values': [[valor] for valor in valores_impares]})
     
-    # Salvar as alterações no Excel
-    wb.save('etiquetas.xlsx')
-    wb.close()
+    # # Salvar as alterações no Excel
+    # wb.save('etiquetas.xlsx')
+    # wb.close()
 
-    my_file = "etiquetas.xlsx"
+    # my_file = "etiquetas.xlsx"
 
-    return my_file
+    # return my_file
 
 def criar_codificacao(row, codigo_unico):
 
@@ -1841,23 +1866,30 @@ if submit_button:
 
         st.write("Arquivos para download")
 
-        excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
+        gerar_etiquetas(tipo_filtro,tab_completa)
+        
+        st.write("Etiquetas adicionada na planilha: https://docs.google.com/spreadsheets/d/1jojKHPBKeALheutJyphsPS-LGNu1e2BC54AAqRnF-us/edit#gid=1389272651")
 
-        filenames.append(excel_etiquetas)
+        # filenames.append(excel_etiquetas)
 
-    filenames_unique = list(set(filenames))
+    if len(filenames)!=0:
 
-    with zipfile.ZipFile("Arquivos.zip", mode="w") as archive:
-        for filename in filenames_unique:
-            archive.write(filename)
+        filenames_unique = list(set(filenames))
 
-    with open("Arquivos.zip", "rb") as fp:
-        btn = st.download_button(
-            label="Download arquivos",
-            data=fp,
-            file_name="Arquivos.zip",
-            mime="application/zip"
-        )
+        with zipfile.ZipFile("Arquivos.zip", mode="w") as archive:
+            for filename in filenames_unique:
+                archive.write(filename)
+
+        with open("Arquivos.zip", "rb") as fp:
+            btn = st.download_button(
+                label="Download arquivos",
+                data=fp,
+                file_name="Arquivos.zip",
+                mime="application/zip"
+            )
+    
+    else:
+        pass
 
     st.write("Resumo:")
     base_carga_filtro = base_carga.query("Datas == @tipo_filtro")
