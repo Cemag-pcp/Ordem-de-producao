@@ -80,6 +80,71 @@ today = today.strftime('%d/%m/%Y')
 
 filenames = []
 
+def gerar_etiquetas(tipo_filtro,df):
+
+    # Criar uma coluna adicional
+    # Repetir as linhas de acordo com a quantidade total
+    df = df.loc[df.index.repeat(df['Qtde_total'])].reset_index(drop=True)
+    df['sequencia'] = ''
+    
+    contador = 1
+
+    for i in range(len(df)):
+        
+        try:
+            if df['Código'][i] == df['Código'][i-1]:
+                df['sequencia'][i] = str(contador) + "/" + str(df['Qtde_total'][i])
+                contador += 1
+            else:
+                contador = 1
+                df['sequencia'][i] = str(contador) + "/" + str(df['Qtde_total'][i])
+                contador += 1
+        except:
+            df['sequencia'][i] = str(contador) + "/" + str(df['Qtde_total'][i])
+            contador += 1
+            continue
+
+    codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[6:10]
+
+    df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
+
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}\nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+
+    # Carregar o modelo Excel existente
+    # modelo_path = 'modelo_etiquetas.xlsx'
+    # book = load_workbook(modelo_path)
+
+    wb = Workbook()
+    wb = load_workbook('modelo_etiquetas.xlsx')
+    ws = wb.active
+
+    # Acessar a planilha desejada
+    sheet = wb.active
+
+    # Adicionar os valores intercalando entre as colunas A e B do Excel
+    for index, value in enumerate(df['Concatenacao'], start=1):
+        if index % 2 == 0:
+            sheet[f'B{index//2}'] = value
+        else:
+            sheet[f'A{index//2 + 1}'] = value
+    
+    # Salvar as alterações no Excel
+    wb.save('etiquetas.xlsx')
+    wb.close()
+
+    my_file = "etiquetas.xlsx"
+
+    return my_file
+
+def criar_codificacao(row, codigo_unico):
+
+    if row['Célula'] == "EIXO COMPLETO":
+        return row['Célula'][0:3] + codigo_unico + "C"
+    elif row['Célula'] == "EIXO SIMPLES":
+        return row['Célula'][0:3] + codigo_unico + "S"
+    else:
+        return row['Célula'][0:3] + codigo_unico
+
 def str_to_float(stringNumber):
     """Função para transformar string em float"""
 
@@ -119,11 +184,12 @@ with st.form(key='my_form'):
 
         tipo_filtro = st.date_input('Data: ')
         tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        #tipo_filtro = "08/05/2023"
-        values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria']
+        values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
         setor = st.selectbox('Escolha o setor', values)
-        # setor = 'Pintura'
 
+        # setor = 'Etiquetas'
+        # tipo_filtro = "20/12/2023"
+        
         submit_button = st.form_submit_button(label='Gerar')
 
 if submit_button:
@@ -397,11 +463,8 @@ if submit_button:
                     ws['AN3'] = diluente
                     k = k + 1
 
-                    wb.template = False
-                    wb.save("Pintura " + cor_unique[i] + '.xlsx')
-
-                    my_file = "Pintura " + cor_unique[i] + '.xlsx'
-                    filenames.append(my_file)
+                wb.template = False
+                wb.save("Pintura " + cor_unique[i] + '.xlsx')
 
                 k = 9
 
@@ -440,6 +503,10 @@ if submit_button:
                 tab_completa1 = table.values.tolist()
                 sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {
                                  'values': tab_completa1})
+       
+        # excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
+
+        # filenames.append(excel_etiquetas)
 
     if setor == 'Montagem':
 
@@ -752,7 +819,7 @@ if submit_button:
         
         # ultima_linha = ['','','','','',tipo_filtro,'']
         # tab_completa1.append(ultima_linha)
-
+        
         sh.values_append('Montagem', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
     
     if setor == 'Solda':   
@@ -1598,6 +1665,186 @@ if submit_button:
         sh.values_append('Carpintaria', {'valueInputOption': 'RAW'}, {
                          'values': tab_completa1})
 
+    if setor == 'Etiquetas':
+        
+        base_carretas['Recurso'] = base_carretas['Recurso'].astype(str)
+
+        base_carretas.drop(['Etapa', 'Etapa3', 'Etapa4',
+                           'Etapa5'], axis=1, inplace=True)
+
+        base_carretas.drop(
+            base_carretas[(base_carretas['Etapa2'] == '')].index, inplace=True)
+
+        base_carretas = base_carretas.reset_index(drop=True)
+
+        base_carretas = base_carretas.astype(str)
+
+        for d in range(0, base_carretas.shape[0]):
+
+            if len(base_carretas['Código'][d]) == 5:
+                base_carretas['Código'][d] = '0' + base_carretas['Código'][d]
+
+        # separando string por "-" e adicionando no dataframe antigo
+
+        base_carga["Recurso"] = base_carga["Recurso"].astype(str)
+
+        tratando_coluna = base_carga["Recurso"].str.split(
+            " - ", n=1, expand=True)
+
+        base_carga['Recurso'] = tratando_coluna[0]
+
+        # tratando cores da string
+
+        base_carga['Recurso_cor'] = base_carga['Recurso']
+
+        base_carga = base_carga.reset_index(drop=True)
+
+        df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'sem_cor'],
+                                 'cor': ['Azul', 'Verde', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja']})
+
+        cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV']
+
+        base_carga = base_carga.astype(str)
+
+        for r in range(0, base_carga.shape[0]):
+            base_carga['Recurso_cor'][r] = base_carga['Recurso_cor'][r][len(
+                base_carga['Recurso_cor'][r])-3:len(base_carga['Recurso_cor'][r])]
+            base_carga['Recurso_cor'] = base_carga['Recurso_cor'].str.strip()
+
+            if len(base_carga['Recurso_cor'][r]) > 2:
+                base_carga['Recurso_cor'][r] = base_carga['Recurso_cor'][r][1:3]
+
+            if base_carga['Recurso_cor'][r] not in cores:
+                base_carga['Recurso_cor'][r] = "LC"
+
+        base_carga = pd.merge(base_carga, df_cores, on=[
+                              'Recurso_cor'], how='left')
+
+        base_carga['Recurso'] = base_carga['Recurso'].str.replace(
+            'AN', '')  # Azul
+        base_carga['Recurso'] = base_carga['Recurso'].str.replace(
+            'VJ', '')  # Verde
+        base_carga['Recurso'] = base_carga['Recurso'].str.replace(
+            'LC', '')  # Laranja
+        base_carga['Recurso'] = base_carga['Recurso'].str.replace(
+            'VM', '')  # Vermelho
+        base_carga['Recurso'] = base_carga['Recurso'].str.replace(
+            'AV', '')  # Amarelo
+
+        base_carga['Recurso'] = base_carga['Recurso'].str.strip()
+
+        datas_unique = pd.DataFrame(base_carga['Datas'].unique())
+
+        escolha_data = (base_carga['Datas'] == tipo_filtro)
+        filtro_data = base_carga.loc[escolha_data]
+        filtro_data['Datas'] = pd.to_datetime(filtro_data.Datas)
+
+        # procv e trazendo as colunas que quero ver
+
+        filtro_data = filtro_data.reset_index(drop=True)
+
+        for i in range(len(filtro_data)):
+            if filtro_data['Recurso'][i][0] == '0':
+                filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
+
+        tab_completa = pd.merge(filtro_data, base_carretas, on=[
+                                'Recurso'], how='left')
+
+        tab_completa['Código'] = tab_completa['Código'].astype(str)
+
+        tab_completa = tab_completa.reset_index(drop=True)
+
+        celulas_unique = pd.DataFrame(tab_completa['Célula'].unique())
+        celulas_unique = celulas_unique.dropna(axis=0)
+        celulas_unique.reset_index(drop=True)
+
+        recurso_unique = pd.DataFrame(tab_completa['Recurso'].unique())
+        recurso_unique = recurso_unique.dropna(axis=0)
+
+        # tratando coluna de código
+
+        for t in range(0, tab_completa.shape[0]):
+
+            if len(tab_completa['Código'][t]) == 5:
+                tab_completa['Código'][t] = '0' + \
+                    tab_completa['Código'][t][0:5]
+
+            if len(tab_completa['Código'][t]) == 8:
+                tab_completa['Código'][t] = tab_completa['Código'][t][0:6]
+
+        # criando coluna de quantidade total de itens
+
+        tab_completa = tab_completa.dropna()
+
+        tab_completa['Qtde_x'] = tab_completa['Qtde_x'].str.replace(',', '.')
+
+        tab_completa['Qtde_x'] = tab_completa['Qtde_x'].astype(float)
+        tab_completa['Qtde_x'] = tab_completa['Qtde_x'].astype(int)
+
+        tab_completa = tab_completa.dropna(axis=0)
+
+        tab_completa['Qtde_y'] = tab_completa['Qtde_y'].astype(float)
+        tab_completa['Qtde_y'] = tab_completa['Qtde_y'].astype(int)
+
+        tab_completa['Qtde_total'] = tab_completa['Qtde_x'] * \
+            tab_completa['Qtde_y']
+
+        tab_completa = tab_completa.drop(
+            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y', 'LEAD TIME', 'flag peça', 'Etapa2'])
+
+        tab_completa = tab_completa.groupby(
+            ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum()
+        tab_completa.reset_index(inplace=True)
+
+        # linha abaixo exclui eixo simples do sequenciamento da pintura
+        # tab_completa.drop(tab_completa.loc[tab_completa['Célula']=='EIXO SIMPLES'].index, inplace=True)
+        tab_completa.reset_index(inplace=True, drop=True)
+
+        for t in range(0, len(tab_completa)):
+
+            if tab_completa['Célula'][t] == 'FUEIRO' or \
+                    tab_completa['Célula'][t] == 'LATERAL' or \
+                    tab_completa['Célula'][t] == 'PLAT. TANQUE. CAÇAM.':
+
+                tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + \
+                    tab_completa['Recurso_cor'][t]
+
+            else:
+
+                tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + 'CO'
+                tab_completa['cor'][t] = 'Cinza'
+
+        # Consumo de tinta
+
+        tab_completa = tab_completa.merge(df_consumo_pu[['Codigo item','Consumo Pó (kg)','Consumo PU (L)','Consumo Catalisador (L)']], left_on='Código', right_on='Codigo item', how='left').fillna(0)
+        
+        tab_completa['Consumo Pó (kg)'] = tab_completa['Consumo Pó (kg)'] * tab_completa['Qtde_total']
+        tab_completa['Consumo PU (L)'] = tab_completa['Consumo PU (L)'] * tab_completa['Qtde_total']
+        tab_completa['Consumo Catalisador (L)'] = tab_completa['Consumo Catalisador (L)'] * tab_completa['Qtde_total']
+
+        consumo_po = sum(tab_completa['Consumo Pó (kg)'])
+        consumo_po = f'{round(consumo_po / 25, 2)} caixa(s)'
+
+        consumo_pu_litros = sum(tab_completa['Consumo Pó (kg)'])
+        consumo_pu_latas = round(consumo_pu_litros / 3.08, 2)
+        consumo_pu = f'{consumo_pu_latas} lata(s)'
+
+        consumo_catalisador_litros = sum(tab_completa['Consumo Catalisador (L)'])
+        consumo_catalisador_latas = round(consumo_catalisador_litros * 1000 / 400, 2)
+        consumo_cata = f'{consumo_catalisador_latas} lata(s)'
+
+        diluente = f'{round((consumo_pu_litros * 0.80) / 5, 2)} lata(s)'
+
+        ###########################################################################################
+
+        cor_unique = tab_completa['cor'].unique()
+
+        st.write("Arquivos para download")
+
+        excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
+
+        filenames.append(excel_etiquetas)
+
     filenames_unique = list(set(filenames))
 
     with zipfile.ZipFile("Arquivos.zip", mode="w") as archive:
@@ -1624,3 +1871,6 @@ if submit_button:
         tab_completa[['Célula', 'Código', 'Peca', 'Qtde_total', 'cor']]
     except:
         tab_completa[['Célula','Código','Peca','Qtde_total']]      
+
+
+
