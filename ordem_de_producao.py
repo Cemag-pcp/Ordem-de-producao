@@ -558,10 +558,10 @@ if submit_button:
                 #                  'values': tab_completa1})
         
         
-        tab_completa = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
-        tab_completa = tab_completa.values.tolist()
+        data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
+        data_insert_sql = data_insert_sql.values.tolist()
 
-        insert_pintura(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), tab_completa)
+        insert_pintura(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
 
         # excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
 
