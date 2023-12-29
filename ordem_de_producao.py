@@ -15,6 +15,15 @@ from pathlib import Path
 from openpyxl import Workbook, load_workbook
 from PIL import Image
 
+import psycopg2  # pip install psycopg2
+import psycopg2.extras 
+from psycopg2.extras import execute_values
+
+DB_HOST = "database-1.cdcogkfzajf0.us-east-1.rds.amazonaws.com"
+DB_NAME = "postgres"
+DB_USER = "postgres"
+DB_PASS = "15512332"
+
 ###### CONECTANDO PLANILHAS ##########
 
 st.title('Gerador de Ordem de Produção')
@@ -212,10 +221,29 @@ with st.form(key='my_form'):
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
         setor = st.selectbox('Escolha o setor', values)
 
-        # setor = 'Etiquetas'
-        # tipo_filtro = "20/12/2023"
+        # setor = 'Pintura'
+        # tipo_filtro = "08/01/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
+
+
+def insert_pintura(data_carga, dados):
+    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Exclui os registros com a data_carga fornecida
+    sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s;'
+    cur.execute(sql_delete, (data_carga,))
+    conn.commit()
+
+    for dado in dados:
+        # Construir e executar a consulta INSERT
+        query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s)")
+        cur.execute(query, dado)
+
+    # Commit para aplicar as alterações
+    conn.commit()
+
 
 if submit_button:
 
@@ -496,39 +524,45 @@ if submit_button:
                 my_file = "Pintura " + cor_unique[i] + '.xlsx'
                 filenames.append(my_file)
 
-                name_sheet4 = 'Base gerador de ordem de producao'
-                worksheet4 = 'Pintura'
+                # name_sheet4 = 'Base gerador de ordem de producao'
+                # worksheet4 = 'Pintura'
 
-                sh = sa.open(name_sheet4)
-                wks4 = sh.worksheet(worksheet4)
+                # sh = sa.open(name_sheet4)
+                # wks4 = sh.worksheet(worksheet4)
 
-                list4 = wks4.get_all_records()
-                table = pd.DataFrame(list4)
+                # list4 = wks4.get_all_records()
+                # table = pd.DataFrame(list4)
 
-                tab_completa['Carimbo'] = tipo_filtro + 'Pintura'
-                tab_completa['Tinta'] = ''
-                tab_completa['Data_carga'] = tipo_filtro
+                # tab_completa['Carimbo'] = tipo_filtro + 'Pintura'
+                # tab_completa['Tinta'] = ''
+                # tab_completa['Data_carga'] = tipo_filtro
 
-                tab_completa1 = tab_completa[[
-                    'Carimbo', 'Célula', 'Recurso_cor', 'Peca', 'cor', 'Qtde_total']]
-                tab_completa1['Data_carga'] = tipo_filtro
-                tab_completa1['Setor'] = 'Pintura'
+                # tab_completa1 = tab_completa[[
+                #     'Carimbo', 'Célula', 'Recurso_cor', 'Peca', 'cor', 'Qtde_total']]
+                # tab_completa1['Data_carga'] = tipo_filtro
+                # tab_completa1['Setor'] = 'Pintura'
 
-                tab_completa_2 = tab_completa
+                # tab_completa_2 = tab_completa
 
-                table = table.loc[(table.UNICO == tipo_filtro + 'Pintura')]
-                tab_completa_2 = pd.DataFrame(tab_completa1)
-                list_columns = table.columns.values.tolist()
-                tab_completa_2.columns = list_columns
-                frames = [table, tab_completa_2]
-                table = pd.concat(frames)
-                table = table.drop_duplicates(keep=False)
-                table['QT_ITENS'] = table['QT_ITENS'].astype(int)
+                # table = table.loc[(table.UNICO == tipo_filtro + 'Pintura')]
+                # tab_completa_2 = pd.DataFrame(tab_completa1)
+                # list_columns = table.columns.values.tolist()
+                # tab_completa_2.columns = list_columns
+                # frames = [table, tab_completa_2]
+                # table = pd.concat(frames)
+                # table = table.drop_duplicates(keep=False)
+                # table['QT_ITENS'] = table['QT_ITENS'].astype(int)
                 
-                tab_completa1 = table.values.tolist()
-                sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {
-                                 'values': tab_completa1})
-       
+                # tab_completa1 = table.values.tolist()
+                # sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {
+                #                  'values': tab_completa1})
+        
+        
+        tab_completa = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
+        tab_completa = tab_completa.values.tolist()
+
+        insert_pintura(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), tab_completa)
+
         # excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
 
         # filenames.append(excel_etiquetas)
