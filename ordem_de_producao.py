@@ -557,6 +557,7 @@ if submit_button:
                 # sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {
                 #                  'values': tab_completa1})
         
+        tab_completa['Datas'] = tab_completa['Datas'].astype(str)
         tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%d-%m').strftime('%Y-%m-%d'))
 
         data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
