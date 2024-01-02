@@ -221,7 +221,7 @@ with st.form(key='my_form'):
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
         setor = st.selectbox('Escolha o setor', values)
 
-        # setor = 'Pintura'
+        # setor = 'Montagem'
         # tipo_filtro = "08/01/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
@@ -239,6 +239,24 @@ def insert_pintura(data_carga, dados):
     for dado in dados:
         # Construir e executar a consulta INSERT
         query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s)")
+        cur.execute(query, dado)
+
+    # Commit para aplicar as alterações
+    conn.commit()
+
+def insert_montagem(data_carga, dados):
+    
+    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Exclui os registros com a data_carga fornecida
+    sql_delete = 'DELETE FROM pcp.gerador_ordens_montagem WHERE data_carga = %s;'
+    cur.execute(sql_delete, (data_carga,))
+    conn.commit()
+
+    for dado in dados:
+        # Construir e executar a consulta INSERT
+        query = ("INSERT INTO pcp.gerador_ordens_montagem (celula, codigo, peca, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s)")
         cur.execute(query, dado)
 
     # Commit para aplicar as alterações
@@ -819,70 +837,70 @@ if submit_button:
                     ws['AD' + str(k)] = filtrar['Qtde_total'][j]
                     k = k + 1
 
-                    wb.template = False
-                    wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
+                wb.template = False
+                wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
 
                 k = 9
 
                 my_file = "Montagem " + celulas_unique[0][i] + '.xlsx'
                 filenames.append(my_file)
 
-        name_sheet4 = 'Base gerador de ordem de producao'
-        worksheet4 = 'Montagem'
+        # name_sheet4 = 'Base gerador de ordem de producao'
+        # worksheet4 = 'Montagem'
 
-        sh = sa.open(name_sheet4)
-        wks4 = sh.worksheet(worksheet4)
+        # sh = sa.open(name_sheet4)
+        # wks4 = sh.worksheet(worksheet4)
 
-        list4 = wks4.get_all_records()
-        table = pd.DataFrame(list4)
+        # list4 = wks4.get_all_records()
+        # table = pd.DataFrame(list4)
 
-        table = table.astype(str)
+        # table = table.astype(str)
 
-        for i in range(len(table)):
-            if len(table['CODIGO'][i]) == 5:
-                table['CODIGO'][i] = '0'+table['CODIGO'][i]
+        # for i in range(len(table)):
+        #     if len(table['CODIGO'][i]) == 5:
+        #         table['CODIGO'][i] = '0'+table['CODIGO'][i]
 
-        tab_completa['Carimbo'] = tipo_filtro + 'Montagem'
-        tab_completa['Data_carga'] = tipo_filtro
+        # tab_completa['Carimbo'] = tipo_filtro + 'Montagem'
+        # tab_completa['Data_carga'] = tipo_filtro
 
-        tab_completa1 = tab_completa[[
-            'Carimbo', 'Célula', 'Código', 'Peca', 'Qtde_total', 'Data_carga']]
-        tab_completa1['Data_carga'] = tipo_filtro
-        tab_completa1['Setor'] = 'Montagem'
+        # tab_completa1 = tab_completa[[
+        #     'Carimbo', 'Célula', 'Código', 'Peca', 'Qtde_total', 'Data_carga']]
+        # tab_completa1['Data_carga'] = tipo_filtro
+        # tab_completa1['Setor'] = 'Montagem'
 
-        tab_completa_2 = tab_completa1
+        # tab_completa_2 = tab_completa1
 
-        table = table.loc[(table.UNICO == tipo_filtro + 'Montagem')]
+        # table = table.loc[(table.UNICO == tipo_filtro + 'Montagem')]
 
-        list_columns = table.columns.values.tolist()
+        # list_columns = table.columns.values.tolist()
 
-        tab_completa_2.columns = list_columns
+        # tab_completa_2.columns = list_columns
 
-        frames = [table, tab_completa_2]
+        # frames = [table, tab_completa_2]
 
-        table = pd.concat(frames)
-        table['QT_ITENS'] = table['QT_ITENS'].astype(int)
-        table = table.drop_duplicates(keep=False)
+        # table = pd.concat(frames)
+        # table['QT_ITENS'] = table['QT_ITENS'].astype(int)
+        # table = table.drop_duplicates(keep=False)
         
-        table = table.sort_values(by='CELULA').reset_index(drop=True)
+        # table = table.sort_values(by='CELULA').reset_index(drop=True)
       
-        # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
-        new_rows = []
-        for index, row in table.iterrows():
-            new_rows.append(row)
-            if index < len(table) - 1 and table.at[index, 'CELULA'] != table.at[index + 1, 'CELULA']:
-                new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
-            elif index == len(table) - 1:
-                new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
+        # # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
+        # new_rows = []
+        # for index, row in table.iterrows():
+        #     new_rows.append(row)
+        #     if index < len(table) - 1 and table.at[index, 'CELULA'] != table.at[index + 1, 'CELULA']:
+        #         new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
+        #     elif index == len(table) - 1:
+        #         new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
         
-        new_df = pd.DataFrame(new_rows).reset_index(drop=True)
+        # new_df = pd.DataFrame(new_rows).reset_index(drop=True)
 
-        tab_completa1 = new_df.values.tolist()
+        data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas']].values.tolist()
         
         # ultima_linha = ['','','','','',tipo_filtro,'']
         # tab_completa1.append(ultima_linha)
         
-        sh.values_append('Montagem', {'valueInputOption': 'RAW'}, {'values': tab_completa1})
+        insert_montagem(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
     
     if setor == 'Solda':   
     
