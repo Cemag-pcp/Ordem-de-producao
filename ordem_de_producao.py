@@ -136,9 +136,9 @@ def gerar_etiquetas(tipo_filtro,df):
     for index, row in df.iterrows():
         new_rows.append(row)
         if index < len(df) - 1 and df.at[index, 'Célula'] != df.at[index + 1, 'Célula']:
-            new_rows.append(pd.Series(['']*18, index=df.columns))
+            new_rows.append(pd.Series(['']*15, index=df.columns))
         elif index == len(df) - 1:
-            new_rows.append(pd.Series(['']*18, index=df.columns))
+            new_rows.append(pd.Series(['']*15, index=df.columns))
     
     df = pd.DataFrame(new_rows).reset_index(drop=True)
 
