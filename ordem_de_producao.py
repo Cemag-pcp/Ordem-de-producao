@@ -101,7 +101,8 @@ def gerar_etiquetas(tipo_filtro,df):
     # Repetir as linhas de acordo com a quantidade total
     df = df.loc[df.index.repeat(df['Qtde_total'])].reset_index(drop=True)
     df['sequencia'] = ''
-    
+    df = df.sort_values(by=['Célula','Recurso_cor']).reset_index(drop=True)
+    # df['Célula'].iloc[:,4:]
     contador = 1
 
     for i in range(len(df)):
@@ -120,10 +121,30 @@ def gerar_etiquetas(tipo_filtro,df):
             continue
 
     codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[6:10]
+    
+    # df2 = df.groupby('Célula', as_index=False).apply(lambda x: x.append(pd.Series(name=x.name))).reset_index(drop=True)
 
     df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
 
     df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}\nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+    
+    # for i in range(len(df)):
+    #     try:
+
+    # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
+    new_rows = []
+    for index, row in df.iterrows():
+        new_rows.append(row)
+        if index < len(df) - 1 and df.at[index, 'Célula'] != df.at[index + 1, 'Célula']:
+            new_rows.append(pd.Series(['']*18, index=df.columns))
+        elif index == len(df) - 1:
+            new_rows.append(pd.Series(['']*18, index=df.columns))
+    
+    df = pd.DataFrame(new_rows).reset_index(drop=True)
+
+    # Adicionar linha em branco ao final de cada grupo
+
+
 
     # Carregar o modelo Excel existente
     # modelo_path = 'modelo_etiquetas.xlsx'
