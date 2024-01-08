@@ -916,11 +916,16 @@ if submit_button:
         
         # new_df = pd.DataFrame(new_rows).reset_index(drop=True)
 
+        data_formatada = datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d')
+        tab_completa['Datas'] = data_formatada
         data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas']].values.tolist()
         
         # ultima_linha = ['','','','','',tipo_filtro,'']
         # tab_completa1.append(ultima_linha)
         
+        # data = '20/01/2024'
+        # datetime.strptime(data,'%d/%m/%Y').strftime('%Y-%d-%m')
+
         insert_montagem(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
     
     if setor == 'Solda':   
