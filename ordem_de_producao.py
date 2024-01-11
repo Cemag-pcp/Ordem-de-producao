@@ -243,7 +243,7 @@ with st.form(key='my_form'):
         setor = st.selectbox('Escolha o setor', values)
 
         # setor = 'Pintura'
-        # tipo_filtro = "12/01/2024"
+        # tipo_filtro = "13/01/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -495,8 +495,8 @@ if submit_button:
                     ws['AN3'] = diluente
                     k = k + 1
 
-                    wb.template = False
-                    wb.save("Pintura " + cor_unique[i] + '1.xlsx')
+                wb.template = False
+                wb.save("Pintura " + cor_unique[i] + '1.xlsx')
 
                 my_file = "Pintura " + cor_unique[i] + '1.xlsx'
                 filenames.append(my_file)
@@ -533,10 +533,10 @@ if submit_button:
                         ws['AN3'] = diluente
                         k = k + 1
 
-                        wb.save("Pintura " + cor_unique[i] + '.xlsx')
+                    wb.save("Pintura " + cor_unique[i] + '.xlsx')
 
-                    my_file = "Pintura " + cor_unique[i] + '.xlsx'
-                    filenames.append(my_file)
+                my_file = "Pintura " + cor_unique[i] + '.xlsx'
+                filenames.append(my_file)
 
             else:
 
@@ -598,7 +598,7 @@ if submit_button:
                 #                  'values': tab_completa1})
         
         tab_completa['Datas'] = tab_completa['Datas'].astype(str)
-        tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%d-%m').strftime('%Y-%m-%d'))
+        tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%m-%d').strftime('%Y-%d-%m'))
 
         data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
         data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()
@@ -776,8 +776,8 @@ if submit_button:
                     ws['AD' + str(k)] = filtrar['Qtde_total'][j]
                     k = k + 1
 
-                    wb.template = False
-                    wb.save('Montagem ' + celulas_unique[0][i] + '1.xlsx')
+                wb.template = False
+                wb.save('Montagem ' + celulas_unique[0][i] + '1.xlsx')
 
                 my_file = "Montagem " + celulas_unique[0][i] + '1.xlsx'
                 filenames.append(my_file)
@@ -823,8 +823,8 @@ if submit_button:
                         ws['AD' + str(k)] = filtrar['Qtde_total'][j]
                         k = k + 1
 
-                        wb.template = False
-                        wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
+                    wb.template = False
+                    wb.save('Montagem ' + celulas_unique[0][i] + '.xlsx')
 
                     my_file = "Montagem " + celulas_unique[0][i] + '.xlsx'
                     filenames.append(my_file)
