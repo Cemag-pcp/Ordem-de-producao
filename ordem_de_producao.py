@@ -249,18 +249,21 @@ with st.form(key='my_form'):
 
 
 def insert_pintura(data_carga, dados):
+    
+    data_carga = datetime.strptime(data_carga,'%d/%m/%Y').strftime('%Y-%m-%d')
+
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Exclui os registros com a data_carga fornecida
-    sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s;'
+    sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s::date;'
     cur.execute(sql_delete, (data_carga,))
     
     conn.commit()
 
     for dado in dados:
         # Construir e executar a consulta INSERT
-        query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s)")
+        query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s::date)")
         cur.execute(query, dado)
 
     # Commit para aplicar as alterações
@@ -597,16 +600,17 @@ if submit_button:
                 # sh.values_append('Pintura', {'valueInputOption': 'RAW'}, {
                 #                  'values': tab_completa1})
         
-        tab_completa['Datas'] = tab_completa['Datas'].astype(str)
-        tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%m-%d').strftime('%Y-%d-%m'))
+        # tab_completa['Datas'] = tab_completa['Datas'].astype(str)
+        # tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%d-%m').strftime('%Y-%m-%d'))
 
         data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
-        data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()
-        data_insert_sql = data_insert_sql[['Célula','Código','Peca','cor','Qtde_total','Datas']]
+        data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()[['Célula','Código','Peca','cor','Qtde_total','Datas']]
         
         data_insert_sql = data_insert_sql.values.tolist()
 
-        insert_pintura(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
+        # data_formatada = datetime.strptime(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'),'%Y-%m-%d').date()
+
+        insert_pintura(tipo_filtro, data_insert_sql)
 
         # excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
 
