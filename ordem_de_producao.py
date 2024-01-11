@@ -242,8 +242,8 @@ with st.form(key='my_form'):
         values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
         setor = st.selectbox('Escolha o setor', values)
 
-        # setor = 'Montagem'
-        # tipo_filtro = "08/01/2024"
+        # setor = 'Pintura'
+        # tipo_filtro = "12/01/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -255,6 +255,7 @@ def insert_pintura(data_carga, dados):
     # Exclui os registros com a data_carga fornecida
     sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s;'
     cur.execute(sql_delete, (data_carga,))
+    
     conn.commit()
 
     for dado in dados:
@@ -600,7 +601,9 @@ if submit_button:
         tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%d-%m').strftime('%Y-%m-%d'))
 
         data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
-
+        data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()
+        data_insert_sql = data_insert_sql[['Célula','Código','Peca','cor','Qtde_total','Datas']]
+        
         data_insert_sql = data_insert_sql.values.tolist()
 
         insert_pintura(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
