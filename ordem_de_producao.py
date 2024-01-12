@@ -89,22 +89,22 @@ today = today.strftime('%d/%m/%Y')
 
 filenames = []
 
-def gerar_etiquetas(tipo_filtro,df):
 
-    # Abra a planilha pelo seu URL (key)
-    planilha = sa.open_by_key("1jojKHPBKeALheutJyphsPS-LGNu1e2BC54AAqRnF-us")
-
-    # Acesse a aba desejada
-    aba = planilha.worksheet("etiquetas")
+def gerar_etiquetas_montagem(tipo_filtro,df):
+    
+    # tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']
+    # tab_completa[tab_completa['Célula'] == 'CHASSI']
+    df=df[df['Célula'] == 'CHASSI']
+    df['cor'] = 'Cinza'
 
     # Criar uma coluna adicional
     # Repetir as linhas de acordo com a quantidade total
     df = df.loc[df.index.repeat(df['Qtde_total'])].reset_index(drop=True)
     df['sequencia'] = ''
-    df = df.sort_values(by=['Célula','Recurso_cor']).reset_index(drop=True)
+    df = df.sort_values(by=['Célula','Código']).reset_index(drop=True)
     # df['Célula'].iloc[:,4:]
     contador = 1
-
+    
     for i in range(len(df)):
         
         try:
@@ -125,47 +125,118 @@ def gerar_etiquetas(tipo_filtro,df):
     # df2 = df.groupby('Célula', as_index=False).apply(lambda x: x.append(pd.Series(name=x.name))).reset_index(drop=True)
 
     df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
-
-    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}\nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+    
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: Cinza\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
     
     # for i in range(len(df)):
     #     try:
 
     # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
-    new_rows = []
-    for index, row in df.iterrows():
-        new_rows.append(row)
-        if index < len(df) - 1 and df.at[index, 'Célula'] != df.at[index + 1, 'Célula']:
-            new_rows.append(pd.Series(['']*15, index=df.columns))
-        elif index == len(df) - 1:
-            new_rows.append(pd.Series(['']*15, index=df.columns))
+    # new_rows = []
+    # for index, row in df.iterrows():
+    #     new_rows.append(row)
+    #     if index < len(df) - 1 and df.at[index, 'Célula'] != df.at[index + 1, 'Célula']:
+    #         new_rows.append(pd.Series(['']*13, index=df.columns))
+    #     elif index == len(df) - 1:
+    #         new_rows.append(pd.Series(['']*13, index=df.columns))
     
-    df = pd.DataFrame(new_rows).reset_index(drop=True)
+    # df = pd.DataFrame(new_rows).reset_index(drop=True)
+
+    # # Adicionar linha em branco ao final de cada grupo
+
+    # Seus valores a serem anexados
+    # valores = df['Concatenacao'].tolist()
+
+    # # Separar valores pares e ímpares
+    # valores_pares = valores[::2]
+    # valores_impares = valores[1::2]
+
+    # # Anexar à planilha
+    # intervalo_pares = "etiquetas!A3:A" + str(len(valores_pares)+3)  # +3 para ajustar a contagem de linhas
+    # intervalo_impares = "etiquetas!B3:B" + str(len(valores_impares)+3)  # +3 para ajustar a contagem de linhas
+
+    # planilha.values_clear("etiquetas!A:B")
+
+    # # Anexar valores pares
+    # planilha.values_append(intervalo_pares, {'valueInputOption': 'RAW'}, {'values': [[valor] for valor in valores_pares]})
+
+    # # Anexar valores ímpares
+    # planilha.values_append(intervalo_impares, {'valueInputOption': 'RAW'}, {'values': [[valor] for valor in valores_impares]})
+    
+    # # Salvar as alterações no Excel
+    # wb.save('etiquetas.xlsx')
+    # wb.close()
+
+    # my_file = "etiquetas.xlsx"
+
+    # return my_file
+    return df
+
+def gerar_etiquetas(tipo_filtro,df,df_montagem):
+    
+    # tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']
+    # tab_completa[tab_completa['Célula'] == 'CHASSI']
+
+    # Abra a planilha pelo seu URL (key)
+    planilha = sa.open_by_key("1jojKHPBKeALheutJyphsPS-LGNu1e2BC54AAqRnF-us")
+
+    # Acesse a aba desejada
+    aba = planilha.worksheet("etiquetas")
+
+    # Criar uma coluna adicional
+    # Repetir as linhas de acordo com a quantidade total
+    df = df.loc[df.index.repeat(df['Qtde_total'])].reset_index(drop=True)
+    df['sequencia'] = ''
+    df = df.sort_values(by=['Célula','Recurso_cor']).reset_index(drop=True)
+    # df['Célula'].iloc[:,4:]
+    contador = 1
+    
+    for i in range(len(df)):
+        
+        try:
+            if df['Código'][i] == df['Código'][i-1]:
+                df['sequencia'][i] = str(contador) + "/" + str(df['Qtde_total'][i])
+                contador += 1
+            else:
+                contador = 1
+                df['sequencia'][i] = str(contador) + "/" + str(df['Qtde_total'][i])
+                contador += 1
+        except:
+            df['sequencia'][i] = str(contador) + "/" + str(df['Qtde_total'][i])
+            contador += 1
+            continue
+
+    codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[6:10]
+    
+    # df2 = df.groupby('Célula', as_index=False).apply(lambda x: x.append(pd.Series(name=x.name))).reset_index(drop=True)
+
+    df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
+    
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: Azul   Amarelo   Cinza   Laranja   Verde   Vermelho\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________" if row['cor'] != 'Cinza' else f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+    
+    df_etiquetas_montagem = gerar_etiquetas_montagem(tipo_filtro,df_montagem)
+
+    df_final = pd.concat([df,df_etiquetas_montagem]).reset_index(drop=True)
+    # for i in range(len(df)):
+    #     try:
+
+    # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
+    new_rows = []
+    for index, row in df_final.iterrows():
+        new_rows.append(row)
+        if index < len(df_final) - 1 and df_final.at[index, 'Célula'] != df_final.at[index + 1, 'Célula']:
+            new_rows.append(pd.Series(['']*14, index=df_final.columns))
+            new_rows.append(pd.Series(['']*14, index=df_final.columns))
+        elif index == len(df_final) - 1:
+            new_rows.append(pd.Series(['']*14, index=df_final.columns))
+            new_rows.append(pd.Series(['']*14, index=df_final.columns))
+    
+    df_final = pd.DataFrame(new_rows).reset_index(drop=True)
 
     # Adicionar linha em branco ao final de cada grupo
 
-
-
-    # Carregar o modelo Excel existente
-    # modelo_path = 'modelo_etiquetas.xlsx'
-    # book = load_workbook(modelo_path)
-
-    # wb = Workbook()
-    # wb = load_workbook('modelo_etiquetas.xlsx')
-    # ws = wb.active
-
-    # # Acessar a planilha desejada
-    # sheet = wb.active
-
-    # # Adicionar os valores intercalando entre as colunas A e B do Excel
-    # for index, value in enumerate(df['Concatenacao'], start=1):
-    #     if index % 2 == 0:
-    #         sheet[f'B{index//2}'] = value
-    #     else:
-    #         sheet[f'A{index//2 + 1}'] = value
-
     # Seus valores a serem anexados
-    valores = df['Concatenacao'].tolist()
+    valores = df_final['Concatenacao'].tolist()
 
     # Separar valores pares e ímpares
     valores_pares = valores[::2]
@@ -183,14 +254,6 @@ def gerar_etiquetas(tipo_filtro,df):
     # Anexar valores ímpares
     planilha.values_append(intervalo_impares, {'valueInputOption': 'RAW'}, {'values': [[valor] for valor in valores_impares]})
     
-    # # Salvar as alterações no Excel
-    # wb.save('etiquetas.xlsx')
-    # wb.close()
-
-    # my_file = "etiquetas.xlsx"
-
-    # return my_file
-
 def criar_codificacao(row, codigo_unico):
 
     if row['Célula'] == "EIXO COMPLETO":
@@ -1780,6 +1843,124 @@ if submit_button:
 
     if setor == 'Etiquetas':
         
+        base_carreta_montagem = base_carretas.copy()
+        base_carga_montagem = base_carga.copy()
+
+        ########################### Montagem ###########################
+
+        base_carreta_montagem['Código'] = base_carreta_montagem['Código'].astype(str)
+        base_carreta_montagem['Recurso'] = base_carreta_montagem['Recurso'].astype(str)
+
+        ####### retirando cores dos códigos######
+
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].astype(str)
+
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('AM', '')
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('AN', '')
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('VJ', '')
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('LC', '')
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('VM', '')
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('AV', '')
+
+        # base_carga_montagem[base_carga_montagem['Datas'] == '01/06/2023']
+
+        ###### retirando espaco em branco####
+
+        base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.strip()
+
+        ##### excluindo colunas e linhas#####
+
+        base_carreta_montagem.drop(['Etapa2', 'Etapa3', 'Etapa4',
+                           'Etapa5'], axis=1, inplace=True)
+
+        # & (base_carreta_montagem['Unit_Price'] < 600)].index, inplace=True)
+        base_carreta_montagem.drop(
+            base_carreta_montagem[(base_carreta_montagem['Etapa'] == '')].index, inplace=True)
+
+        #### criando código único#####
+
+        codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[6:10]
+
+        #### filtrando data da carga#####
+
+        datas_unique = pd.DataFrame(base_carga_montagem['Datas'].unique())
+
+        escolha_data = (base_carga_montagem['Datas'] == tipo_filtro)
+        filtro_data = base_carga_montagem.loc[escolha_data]
+        filtro_data['Datas'] = pd.to_datetime(filtro_data.Datas)
+
+        filtro_data = filtro_data.reset_index(drop=True)
+        filtro_data['Recurso'] = filtro_data['Recurso'].astype(str)
+
+        for i in range(len(filtro_data)):
+            if filtro_data['Recurso'][i][0] == '0':
+                filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
+
+        ##### juntando planilhas de acordo com o recurso#######
+
+        tab_completa = pd.merge(filtro_data, base_carreta_montagem[[
+                                'Recurso', 'Código', 'Peca', 'Qtde', 'Célula']], on=['Recurso'], how='left')
+        tab_completa = tab_completa.dropna(axis=0)
+
+        # carretas_agrupadas = filtro_data[['Recurso','Qtde']]
+        # carretas_agrupadas = pd.DataFrame(filtro_data.groupby('Recurso').sum())
+        # carretas_agrupadas = carretas_agrupadas[['Qtde']]
+
+        # st.dataframe(carretas_agrupadas)
+
+        tab_completa['Código'] = tab_completa['Código'].astype(str)
+
+        tab_completa.reset_index(inplace=True, drop=True)
+
+        celulas_unique = pd.DataFrame(tab_completa['Célula'].unique())
+        celulas_unique = celulas_unique.dropna(axis=0)
+        celulas_unique.reset_index(inplace=True)
+
+        recurso_unique = pd.DataFrame(tab_completa['Recurso'].unique())
+        recurso_unique = recurso_unique.dropna(axis=0)
+
+        # criando coluna de quantidade total de itens
+
+        try:
+            tab_completa['Qtde_x'] = tab_completa['Qtde_x'].str.replace(
+                ',', '.')
+        except:
+            pass
+
+        tab_completa['Qtde_x'] = tab_completa['Qtde_x'].astype(float)
+        tab_completa['Qtde_x'] = tab_completa['Qtde_x'].astype(int)
+
+        tab_completa['Qtde_y'] = tab_completa['Qtde_y'].astype(float)
+        tab_completa['Qtde_y'] = tab_completa['Qtde_y'].astype(int)
+
+        tab_completa['Qtde_total'] = tab_completa['Qtde_x'] * \
+            tab_completa['Qtde_y']
+
+        tab_completa = tab_completa.drop(
+            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y'])
+
+        tab_completa = tab_completa.groupby(
+            ['Código', 'Peca', 'Célula', 'Datas']).sum()
+
+        # tab_completa = tab_completa.drop_duplicates()
+
+        tab_completa.reset_index(inplace=True)
+
+        # tratando coluna de código e recurso
+
+        for d in range(0, tab_completa.shape[0]):
+
+            if len(tab_completa['Código'][d]) == 5:
+                tab_completa['Código'][d] = '0' + tab_completa['Código'][d]
+        
+        tab_completa['Código'] = 'Montagem/Solda ' + tab_completa['Código']
+        tab_completa_montagem = tab_completa.copy()
+        # teste1 = tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']
+        # teste2 = tab_completa[tab_completa['Célula'] == 'CHASSI']
+        
+        # pd.concat([teste2,teste1])
+        ########################### Pintura ###########################
+
         base_carretas['Recurso'] = base_carretas['Recurso'].astype(str)
 
         base_carretas.drop(['Etapa', 'Etapa3', 'Etapa4',
@@ -1948,13 +2129,18 @@ if submit_button:
 
         diluente = f'{round((consumo_pu_litros * 0.80) / 5, 2)} lata(s)'
 
+        tab_completa = tab_completa.groupby(['Código','Peca','Célula','Datas','cor','Recurso_cor']).sum('Qtde_total').reset_index()
+
+        # tab_completa = pd.concat([tab_completa,tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']])
+        # tab_completa['cor'] = tab_completa['cor'].fillna('Montagem/Solda')
+        # tab_completa['Recurso_cor'] = tab_completa['Recurso_cor'].fillna(tab_completa['Código'] + ' ' + tab_completa['cor'])
         ###########################################################################################
 
-        cor_unique = tab_completa['cor'].unique()
+        # cor_unique = tab_completa['cor'].unique()
 
-        st.write("Arquivos para download")
+        # st.write("Arquivos para download")
 
-        gerar_etiquetas(tipo_filtro,tab_completa)
+        gerar_etiquetas(tipo_filtro,tab_completa,tab_completa_montagem)
         
         st.write("Etiquetas adicionada na planilha: https://docs.google.com/spreadsheets/d/1jojKHPBKeALheutJyphsPS-LGNu1e2BC54AAqRnF-us/edit#gid=1389272651")
 
