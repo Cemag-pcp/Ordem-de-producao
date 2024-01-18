@@ -120,13 +120,13 @@ def gerar_etiquetas_montagem(tipo_filtro,df):
             contador += 1
             continue
 
-    codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[6:10]
+    codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[8:10]
     
     # df2 = df.groupby('Célula', as_index=False).apply(lambda x: x.append(pd.Series(name=x.name))).reset_index(drop=True)
 
     df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
-    
-    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: Cinza\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']} ☐\n{row['Código_y']} - {row['Peca_y']} ☐       {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: Cinza\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
     
     # for i in range(len(df)):
     #     try:
@@ -206,13 +206,13 @@ def gerar_etiquetas(tipo_filtro,df,df_montagem):
             contador += 1
             continue
 
-    codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[6:10]
+    codigo_unico = tipo_filtro[:2] + tipo_filtro[3:5] + tipo_filtro[8:10]
     
     # df2 = df.groupby('Célula', as_index=False).apply(lambda x: x.append(pd.Series(name=x.name))).reset_index(drop=True)
 
     df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
     
-    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: Azul   Amarelo   Cinza   Laranja   Verde   Vermelho\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________" if row['cor'] != 'Cinza' else f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: ☐Azul  ☐Amarelo  ☐Cinza  ☐Laranja  ☐Verde  ☐Vermelho\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________" if row['cor'] != 'Cinza' else f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
     
     df_etiquetas_montagem = gerar_etiquetas_montagem(tipo_filtro,df_montagem)
 
@@ -225,11 +225,11 @@ def gerar_etiquetas(tipo_filtro,df,df_montagem):
     for index, row in df_final.iterrows():
         new_rows.append(row)
         if index < len(df_final) - 1 and df_final.at[index, 'Célula'] != df_final.at[index + 1, 'Célula']:
-            new_rows.append(pd.Series(['']*14, index=df_final.columns))
-            new_rows.append(pd.Series(['']*14, index=df_final.columns))
+            new_rows.append(pd.Series(['']*12, index=df_final.columns))
+            new_rows.append(pd.Series(['']*12, index=df_final.columns))
         elif index == len(df_final) - 1:
-            new_rows.append(pd.Series(['']*14, index=df_final.columns))
-            new_rows.append(pd.Series(['']*14, index=df_final.columns))
+            new_rows.append(pd.Series(['']*12, index=df_final.columns))
+            new_rows.append(pd.Series(['']*12, index=df_final.columns))
     
     df_final = pd.DataFrame(new_rows).reset_index(drop=True)
 
@@ -349,6 +349,78 @@ def insert_montagem(data_carga, dados):
 
     # Commit para aplicar as alterações
     conn.commit()
+
+def tratar_conjuntos_iguais(base_carretas,base_carga):
+
+    base_carreta_montagem = base_carretas.copy()
+    base_carga_montagem = base_carga.copy()
+
+    ########################### Montagem ###########################
+
+    base_carreta_montagem['Código'] = base_carreta_montagem['Código'].astype(str)
+    base_carreta_montagem['Recurso'] = base_carreta_montagem['Recurso'].astype(str)
+
+    ####### retirando cores dos códigos######
+
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].astype(str)
+
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('AM', '')
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('AN', '')
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('VJ', '')
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('LC', '')
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('VM', '')
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.replace('AV', '')
+
+    # base_carga_montagem[base_carga_montagem['Datas'] == '01/06/2023']
+
+    ###### retirando espaco em branco####
+
+    base_carga_montagem['Recurso'] = base_carga_montagem['Recurso'].str.strip()
+
+    base_carreta_montagem.drop(['Etapa3', 'Etapa4',
+                           'Etapa5'], axis=1, inplace=True)
+
+    base_carreta_montagem_chassi = base_carreta_montagem[base_carreta_montagem['Célula'] == 'CHASSI']
+    # base_carreta_montagem[base_carreta_montagem['Célula'] == 'EIXO SIMPLES']
+
+    chassi_pintura = base_carreta_montagem_chassi[base_carreta_montagem_chassi['Etapa2'] != ''].drop(columns={'Etapa'})
+    chassi_montagem = base_carreta_montagem_chassi[base_carreta_montagem_chassi['Etapa'] != ''].drop(columns={'Etapa2'})
+
+    chassis_join = chassi_montagem.merge(chassi_pintura, how='left', on='Recurso')
+
+    ##################################################################################
+
+    escolha_data = (base_carga_montagem['Datas'] == tipo_filtro)
+    filtro_data = base_carga_montagem.loc[escolha_data]
+    filtro_data['Datas'] = pd.to_datetime(filtro_data.Datas)
+
+    filtro_data = filtro_data.reset_index(drop=True)
+    filtro_data['Recurso'] = filtro_data['Recurso'].astype(str)
+
+    for i in range(len(filtro_data)):
+        if filtro_data['Recurso'][i][0] == '0':
+            filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
+
+    ##### juntando planilhas de acordo com o recurso#######
+
+    tab_completa = pd.merge(filtro_data, chassis_join[[
+                            'Recurso', 'Código_x', 'Peca_x', 'Qtde_x', 'Célula_x', 'Código_y', 'Peca_y']], on=['Recurso'], how='left')
+    # tab_completa = tab_completa.dropna(axis=0)
+
+    tab_completa = tab_completa.groupby(['Datas','Código_x','Peca_x','Código_y', 'Peca_y','Célula_x']).sum(['Qtde','Qtde_x']).reset_index()
+
+    for i in range(len(tab_completa)):
+
+        if len(tab_completa['Código_x'][i]) == 5:
+            tab_completa['Código_x'][i] = '0' + tab_completa['Código_x'][i]   
+
+        if len(tab_completa['Código_y'][i]) == 5:
+            tab_completa['Código_y'][i] = '0' + tab_completa['Código_y'][i]   
+
+    chassi = tab_completa.rename(columns={'Código_x':'Código','Peca_x':'Peca','Qtde':'Qtde_total','Célula_x':'Célula'})
+
+
+    return chassi
 
 
 if submit_button:
@@ -1953,12 +2025,21 @@ if submit_button:
             if len(tab_completa['Código'][d]) == 5:
                 tab_completa['Código'][d] = '0' + tab_completa['Código'][d]
         
-        tab_completa['Código'] = 'Montagem/Solda ' + tab_completa['Código']
+        tab_completa = tab_completa[tab_completa['Célula'] != 'CHASSI']
+
+        # tab_completa['Código'] = 'Montagem/Solda ' + tab_completa['Código']
         tab_completa_montagem = tab_completa.copy()
         # teste1 = tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']
         # teste2 = tab_completa[tab_completa['Célula'] == 'CHASSI']
         
         # pd.concat([teste2,teste1])
+
+        chassi_separado = tratar_conjuntos_iguais(base_carretas,base_carga)
+
+        tab_completa_montagem = chassi_separado.copy()
+
+        # tab_completa_montagem = pd.concat([tab_completa_montagem,chassi_separado])
+
         ########################### Pintura ###########################
 
         base_carretas['Recurso'] = base_carretas['Recurso'].astype(str)
@@ -2110,27 +2191,27 @@ if submit_button:
 
         # Consumo de tinta
 
-        tab_completa = tab_completa.merge(df_consumo_pu[['Codigo item','Consumo Pó (kg)','Consumo PU (L)','Consumo Catalisador (L)']], left_on='Código', right_on='Codigo item', how='left').fillna(0)
+        # tab_completa = tab_completa.merge(df_consumo_pu[['Codigo item','Consumo Pó (kg)','Consumo PU (L)','Consumo Catalisador (L)']], left_on='Código', right_on='Codigo item', how='left').fillna(0)
         
-        tab_completa['Consumo Pó (kg)'] = tab_completa['Consumo Pó (kg)'] * tab_completa['Qtde_total']
-        tab_completa['Consumo PU (L)'] = tab_completa['Consumo PU (L)'] * tab_completa['Qtde_total']
-        tab_completa['Consumo Catalisador (L)'] = tab_completa['Consumo Catalisador (L)'] * tab_completa['Qtde_total']
+        # tab_completa['Consumo Pó (kg)'] = tab_completa['Consumo Pó (kg)'] * tab_completa['Qtde_total']
+        # tab_completa['Consumo PU (L)'] = tab_completa['Consumo PU (L)'] * tab_completa['Qtde_total']
+        # tab_completa['Consumo Catalisador (L)'] = tab_completa['Consumo Catalisador (L)'] * tab_completa['Qtde_total']
 
-        consumo_po = sum(tab_completa['Consumo Pó (kg)'])
-        consumo_po = f'{round(consumo_po / 25, 2)} caixa(s)'
+        # consumo_po = sum(tab_completa['Consumo Pó (kg)'])
+        # consumo_po = f'{round(consumo_po / 25, 2)} caixa(s)'
 
-        consumo_pu_litros = sum(tab_completa['Consumo Pó (kg)'])
-        consumo_pu_latas = round(consumo_pu_litros / 3.08, 2)
-        consumo_pu = f'{consumo_pu_latas} lata(s)'
+        # consumo_pu_litros = sum(tab_completa['Consumo Pó (kg)'])
+        # consumo_pu_latas = round(consumo_pu_litros / 3.08, 2)
+        # consumo_pu = f'{consumo_pu_latas} lata(s)'
 
-        consumo_catalisador_litros = sum(tab_completa['Consumo Catalisador (L)'])
-        consumo_catalisador_latas = round(consumo_catalisador_litros * 1000 / 400, 2)
-        consumo_cata = f'{consumo_catalisador_latas} lata(s)'
+        # consumo_catalisador_litros = sum(tab_completa['Consumo Catalisador (L)'])
+        # consumo_catalisador_latas = round(consumo_catalisador_litros * 1000 / 400, 2)
+        # consumo_cata = f'{consumo_catalisador_latas} lata(s)'
 
-        diluente = f'{round((consumo_pu_litros * 0.80) / 5, 2)} lata(s)'
+        # diluente = f'{round((consumo_pu_litros * 0.80) / 5, 2)} lata(s)'
 
         tab_completa = tab_completa.groupby(['Código','Peca','Célula','Datas','cor','Recurso_cor']).sum('Qtde_total').reset_index()
-
+        tab_completa = tab_completa[tab_completa['Célula'] != 'CHASSI']
         # tab_completa = pd.concat([tab_completa,tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']])
         # tab_completa['cor'] = tab_completa['cor'].fillna('Montagem/Solda')
         # tab_completa['Recurso_cor'] = tab_completa['Recurso_cor'].fillna(tab_completa['Código'] + ' ' + tab_completa['cor'])
