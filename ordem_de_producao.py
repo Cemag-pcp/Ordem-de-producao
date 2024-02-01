@@ -304,7 +304,7 @@ with st.form(key='my_form'):
         setor = st.selectbox('Escolha o setor', values)
 
         # setor = 'Pintura'
-        # tipo_filtro = "01/02/2024"
+        # tipo_filtro = "05/02/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -611,8 +611,10 @@ if submit_button:
                 wb = load_workbook('modelo_op_pintura.xlsx')
                 ws = wb.active
 
-                filtro_excel = (tab_completa['cor'] == cor_unique[i])
-                filtrar = tab_completa.loc[filtro_excel]
+                tabela_filtrada_carga = tab_completa[tab_completa['Carga'] == carga]
+
+                filtro_excel = (tabela_filtrada_carga['cor'] == cor_unique[i])
+                filtrar = tabela_filtrada_carga.loc[filtro_excel]
                 filtrar = filtrar.reset_index(drop=True)
                 filtrar = filtrar.groupby(
                     ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum().reset_index()
@@ -648,8 +650,8 @@ if submit_button:
                     wb = load_workbook('modelo_op_pintura.xlsx')
                     ws = wb.active
 
-                    filtro_excel = (tab_completa['cor'] == cor_unique[i])
-                    filtrar = tab_completa.loc[filtro_excel]
+                    filtro_excel = (tabela_filtrada_carga['cor'] == cor_unique[i])
+                    filtrar = tabela_filtrada_carga.loc[filtro_excel]
                     filtrar = filtrar.reset_index(drop=True)
                     filtrar = filtrar.groupby(
                         ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum().reset_index()
@@ -745,7 +747,7 @@ if submit_button:
         # tab_completa['Datas'] = tab_completa['Datas'].astype(str)
         # tab_completa['Datas'] = tab_completa['Datas'].apply(lambda x: datetime.strptime(x,'%Y-%d-%m').strftime('%Y-%m-%d'))
 
-        data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
+        data_insert_sql = tabela_filtrada_carga[['Célula','Código','Peca','cor','Qtde_total','Datas']]
         data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()[['Célula','Código','Peca','cor','Qtde_total','Datas']]
         data_insert_sql['Datas'] = pd.to_datetime(data_insert_sql['Datas'], format='%d/%m/%Y')
         # data_insert_sql['Datas'] = data_insert_sql['Datas'].dt.strftime("%Y-%m-%d")
@@ -885,16 +887,21 @@ if submit_button:
         carga_unique = tab_completa['Carga'].unique()
 
         for carga in carga_unique:
+            print(carga)
+            
             for i in range(0, len(celulas_unique)):
 
                 wb = Workbook()
                 wb = load_workbook('modelo_op_montagem.xlsx')
                 ws = wb.active
 
-                filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
-                filtrar = tab_completa.loc[filtro_excel]
+                tabela_filtrada_carga = tab_completa[tab_completa['Carga'] == carga]
+
+                filtro_excel = (tabela_filtrada_carga['Célula'] == celulas_unique[0][i])
+                filtrar = tabela_filtrada_carga.loc[filtro_excel]
                 filtrar.reset_index(inplace=True)
-                filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
+                filtro_excel = (tabela_filtrada_carga['Célula'] == celulas_unique[0][i])
+                # filtro_excel = tab_completa[tab_completa['Carga'] == carga]
 
                 if len(filtrar) > 21:
 
@@ -1006,7 +1013,7 @@ if submit_button:
                             # código único para cada sequenciamento
                             ws['AK4'] = celulas_unique[0][i][0:3] + codigo_unico
 
-                        filtrar = tab_completa.loc[filtro_excel]
+                        filtrar = tabela_filtrada_carga.loc[filtro_excel]
                         filtrar.reset_index(inplace=True)
 
                         ws['M4'] = tipo_filtro  # data da carga
