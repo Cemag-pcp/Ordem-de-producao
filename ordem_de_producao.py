@@ -304,7 +304,7 @@ with st.form(key='my_form'):
         setor = st.selectbox('Escolha o setor', values)
 
         # setor = 'Pintura'
-        # tipo_filtro = "05/02/2024"
+        # tipo_filtro = "14/02/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -777,8 +777,6 @@ if submit_button:
         base_carga['Recurso'] = base_carga['Recurso'].str.replace('LC', '')
         base_carga['Recurso'] = base_carga['Recurso'].str.replace('VM', '')
         base_carga['Recurso'] = base_carga['Recurso'].str.replace('AV', '')
-
-        # base_carga[base_carga['Datas'] == '01/06/2023']
 
         ###### retirando espaco em branco####
 
@@ -2280,6 +2278,3 @@ if submit_button:
         tab_completa[['Célula', 'Código', 'Peca', 'Qtde_total', 'cor']]
     except:
         tab_completa[['Célula','Código','Peca','Qtde_total']]      
-
-
-
