@@ -83,6 +83,8 @@ base_carga = base_carga.rename(columns={'PED_PREVISAOEMISSAODOC': 'Datas',
 base_carga.dropna(inplace=True)
 base_carga.reset_index(drop=True)
 
+# base_carga[base_carga['Recurso'] == '034830CO']
+
 today = datetime.now()
 ts = pd.Timestamp(today)
 today = today.strftime('%d/%m/%Y')
@@ -216,9 +218,7 @@ def gerar_etiquetas(tipo_filtro,df,df_montagem):
     df_etiquetas_montagem = gerar_etiquetas_montagem(tipo_filtro,df_montagem)
 
     df_final = pd.concat([df,df_etiquetas_montagem]).reset_index(drop=True)
-    # for i in range(len(df)):
-    #     try:
-
+    
     # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
     new_rows = []
     for index, row in df_final.iterrows():
@@ -305,7 +305,7 @@ with st.form(key='my_form'):
         setor = st.selectbox('Escolha o setor', values)
 
         # setor = 'Pintura'
-        # tipo_filtro = "14/02/2024"
+        # tipo_filtro = "22/03/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -782,6 +782,7 @@ if submit_button:
         base_carga['Recurso'] = base_carga['Recurso'].str.replace('LC', '')
         base_carga['Recurso'] = base_carga['Recurso'].str.replace('VM', '')
         base_carga['Recurso'] = base_carga['Recurso'].str.replace('AV', '')
+        base_carga['Recurso'] = base_carga['Recurso'].str.replace('CO', '')
 
         ###### retirando espaco em branco####
 
@@ -795,6 +796,12 @@ if submit_button:
         # & (base_carretas['Unit_Price'] < 600)].index, inplace=True)
         base_carretas.drop(
             base_carretas[(base_carretas['Etapa'] == '')].index, inplace=True)
+        
+        base_carretas = base_carretas.reset_index(drop=True)
+        
+        for i in range(len(base_carretas)):
+            if len(base_carretas['Recurso'][i]) == 5:
+                base_carretas['Recurso'][i] = "0" + base_carretas['Recurso'][i]
 
         #### criando código único#####
 
@@ -814,13 +821,15 @@ if submit_button:
         for i in range(len(filtro_data)):
             if filtro_data['Recurso'][i][0] == '0':
                 filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
-
+            if len(filtro_data['Recurso'][i]) == 5:
+                filtro_data['Recurso'][i] = "0" + filtro_data['Recurso'][i]
+        
         ##### juntando planilhas de acordo com o recurso#######
 
         tab_completa = pd.merge(filtro_data, base_carretas[[
                                 'Recurso', 'Código', 'Peca', 'Qtde', 'Célula']], on=['Recurso'], how='left')
         tab_completa = tab_completa.dropna(axis=0)
-
+        
         # carretas_agrupadas = filtro_data[['Recurso','Qtde']]
         # carretas_agrupadas = pd.DataFrame(filtro_data.groupby('Recurso').sum())
         # carretas_agrupadas = carretas_agrupadas[['Qtde']]
@@ -893,7 +902,6 @@ if submit_button:
             print(carga)
             
             for i in range(0, len(celulas_unique)):
-
                 wb = Workbook()
                 wb = load_workbook('modelo_op_montagem.xlsx')
                 ws = wb.active
