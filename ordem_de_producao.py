@@ -305,7 +305,7 @@ with st.form(key='my_form'):
         setor = st.selectbox('Escolha o setor', values)
 
         # setor = 'Pintura'
-        # tipo_filtro = "22/03/2024"
+        # tipo_filtro = "18/03/2024"
         
         submit_button = st.form_submit_button(label='Gerar')
 
@@ -428,8 +428,7 @@ if submit_button:
 
         base_carretas['Recurso'] = base_carretas['Recurso'].astype(str)
 
-        base_carretas.drop(['Etapa', 'Etapa3', 'Etapa4',
-                           'Etapa5'], axis=1, inplace=True)
+        base_carretas.drop(['Etapa', 'Etapa3', 'Etapa4'], axis=1, inplace=True)
 
         base_carretas.drop(
             base_carretas[(base_carretas['Etapa2'] == '')].index, inplace=True)
@@ -559,19 +558,46 @@ if submit_button:
         # tab_completa.drop(tab_completa.loc[tab_completa['Célula']=='EIXO SIMPLES'].index, inplace=True)
         tab_completa.reset_index(inplace=True, drop=True)
 
-        for t in range(0, len(tab_completa)):
+        tab_completa['Etapa5'].unique()
 
-            if tab_completa['Célula'][t] == 'FUEIRO' or \
-                    tab_completa['Célula'][t] == 'LATERAL' or \
-                    tab_completa['Célula'][t] == 'PLAT. TANQUE. CAÇAM.':
+        # for t in range(0, len(tab_completa)):
 
-                tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + \
-                    tab_completa['Recurso_cor'][t]
+            # if tab_completa['Célula'][t] == 'FUEIRO' or \
+            #         tab_completa['Célula'][t] == 'LATERAL' or \
+            #         tab_completa['Célula'][t] == 'PLAT. TANQUE. CAÇAM.':
 
+            #     tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + \
+            #         tab_completa['Recurso_cor'][t]
+
+            # else:
+
+            #     tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + 'CO'
+            #     tab_completa['cor'][t] = 'Cinza'
+
+        contem_cinza = tab_completa['Etapa5'].str.contains('CINZA')
+        
+        tab_completa.loc[contem_cinza, 'Etapa5'] = 'CINZA'
+
+        contem_colorido = tab_completa['Etapa5'].str.contains('COLORIDO')
+        
+        tab_completa.loc[contem_colorido, 'Etapa5'] = 'COLORIDO'
+
+        # Defina uma função para aplicar a lógica
+        def definir_recurso_cor(row):
+            if row['Etapa5'] == 'CINZA':
+                return row['Código'] + 'CO'
             else:
+                return row['Código'] + row['Recurso_cor']
 
-                tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + 'CO'
-                tab_completa['cor'][t] = 'Cinza'
+        def definir_cor(row):
+            if row['Etapa5'] == 'CINZA':
+                return 'Cinza'
+            else:
+                return row['cor']
+
+        # Aplique a função à coluna 'RECURSO_COR' usando apply
+        tab_completa['Recurso_cor'] = tab_completa.apply(definir_recurso_cor, axis=1)
+        tab_completa['cor'] = tab_completa.apply(definir_cor, axis=1)
 
         # Consumo de tinta
 
