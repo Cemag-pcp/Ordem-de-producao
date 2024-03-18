@@ -294,21 +294,26 @@ with st.sidebar:
     image = Image.open('logo-cemagL.png')
     st.image(image, width=300)
 
-with st.form(key='my_form'):
+# with st.form(key='my_form'):
 
-    with st.sidebar:
+#     with st.sidebar:
 
-        tipo_filtro = st.date_input('Data: ')
-        # tipo_filtro = '04/03/2024'
-        tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
-        values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
-        setor = st.selectbox('Escolha o setor', values)
+tipo_filtro = st.date_input('Data: ')
+# tipo_filtro = '04/03/2024'
+tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
+values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
+setor = st.selectbox('Escolha o setor', values)
 
-        # setor = 'Pintura'
-        # tipo_filtro = "18/03/2024"
-        
-        submit_button = st.form_submit_button(label='Gerar')
+if tipo_filtro:
 
+    cargas_disponiveis = base_carga[base_carga['Datas'] == tipo_filtro]
+    cargas_disponiveis = cargas_disponiveis['Carga'].unique()
+    values_cargas = ['Selecione'] + cargas_disponiveis.tolist()
+    carga_escolhida = st.selectbox('Selecione', values_cargas)
+
+submit_button = st.button(label='Gerar')
+
+    
 def insert_pintura(data_carga, dados):
     
     # data_carga = datetime.strptime(data_carga,'%d/%m/%Y').strftime('%Y-%m-%d')
@@ -421,6 +426,7 @@ def tratar_conjuntos_iguais(base_carretas,base_carga):
 
 
     return chassi
+
 
 if submit_button:
 
@@ -625,6 +631,11 @@ if submit_button:
         cor_unique = tab_completa['cor'].unique()
 
         st.write("Arquivos para download")
+
+        if carga_escolhida != 'Selecione':
+            tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
+        
+        tab_completa = tab_completa.reset_index(drop=True)
 
         carga_unique = tab_completa['Carga'].unique()
 
@@ -921,6 +932,11 @@ if submit_button:
         st.write("Arquivos para download")
 
         k = 9
+
+        if carga_escolhida != 'Selecione':
+            tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
+        
+        tab_completa = tab_completa.reset_index(drop=True)
 
         carga_unique = tab_completa['Carga'].unique()
 
