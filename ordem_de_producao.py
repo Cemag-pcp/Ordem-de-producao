@@ -299,7 +299,7 @@ with st.sidebar:
 #     with st.sidebar:
 
 tipo_filtro = st.date_input('Data: ')
-# tipo_filtro = '04/03/2024'
+# tipo_filtro = '24/04/2024'
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
@@ -866,7 +866,9 @@ if submit_button:
         tab_completa = pd.merge(filtro_data, base_carretas[[
                                 'Recurso', 'Código', 'Peca', 'Qtde', 'Célula']], on=['Recurso'], how='left')
         tab_completa = tab_completa.dropna(axis=0)
-        
+
+        # base_carretas[base_carretas['Recurso'] == '034538M21']
+
         # carretas_agrupadas = filtro_data[['Recurso','Qtde']]
         # carretas_agrupadas = pd.DataFrame(filtro_data.groupby('Recurso').sum())
         # carretas_agrupadas = carretas_agrupadas[['Qtde']]
