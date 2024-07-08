@@ -314,7 +314,7 @@ with st.sidebar:
 #     with st.sidebar:
 
 tipo_filtro = st.date_input('Data: ')
-# tipo_filtro = '25/12/2024'
+# tipo_filtro = '06/07/2024'
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
@@ -933,6 +933,9 @@ if submit_button:
             filtrar.reset_index(inplace=True)
             filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
             # filtro_excel = tab_completa[tab_completa['Carga'] == carga]
+            
+            if filtrar.empty:
+                continue
 
             if len(filtrar) > 21:
 
