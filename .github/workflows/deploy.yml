@@ -1,0 +1,26 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0.2.0
+      with:
+        service_account_key: ${{ secrets.GCLOUD_SERVICE_ACCOUNT }}
+        export_default_credentials: true
+
+    - name: Create service account file
+      run: echo "${{ secrets.GCLOUD_SERVICE_ACCOUNT }}" > service_account.json
+
+    - name: Deploy to Google Cloud
+      run: gcloud app deploy
