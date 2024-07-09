@@ -18,6 +18,7 @@ from PIL import Image
 import psycopg2  # pip install psycopg2
 import psycopg2.extras 
 from psycopg2.extras import execute_values
+from google.oauth2 import service_account
 
 DB_HOST = "database-1.cdcogkfzajf0.us-east-1.rds.amazonaws.com"
 DB_NAME = "postgres"
@@ -25,6 +26,16 @@ DB_USER = "postgres"
 DB_PASS = "15512332"
 
 ###### CONECTANDO PLANILHAS ##########
+
+# Connect to Google Sheets
+service_account_info = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
+
+scope = ['https://www.googleapis.com/auth/spreadsheets',
+         "https://www.googleapis.com/auth/drive"]
+
+credentials = service_account.Credentials.from_service_account_info(service_account_info, scopes=scope)
+
+sa = gspread.authorize(credentials)
 
 st.title('Gerador de Ordem de Produção')
 
@@ -42,9 +53,9 @@ worksheet2 = 'Carga_Vendas'
 worksheet3 = 'Base_Carretas'
 
 # filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
-filename = "service_account.json"
+# filename = "service_account.json"
 
-sa = gspread.service_account(filename)
+# sa = gspread.service_account(filename)
 sh = sa.open(name_sheet)
 
 wks1 = sh.worksheet(worksheet1)
