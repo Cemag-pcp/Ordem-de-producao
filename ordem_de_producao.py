@@ -50,6 +50,7 @@ name_sheet = 'Bases para sequenciamento'
 worksheet1 = 'Base_Carretas'
 worksheet2 = 'Carga_Vendas'
 
+#
 # filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
 # filename = "service_account.json"
 
