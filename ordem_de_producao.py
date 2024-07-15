@@ -62,10 +62,6 @@ wks1 = sh.worksheet(worksheet1)
 wks2 = sh.worksheet(worksheet2)
 wks3 = sh.worksheet(worksheet3)
 
-wks1 = sh.worksheet(worksheet1)
-wks2 = sh.worksheet(worksheet2)
-wks3 = sh.worksheet(worksheet3)
-
 # obtendo todos os valores da planilha
 list1 = wks1.get_all_records()
 list2 = wks2.get_all_records()
