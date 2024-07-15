@@ -50,8 +50,6 @@ name_sheet = 'Bases para sequenciamento'
 worksheet1 = 'Base_Carretas'
 worksheet2 = 'Carga_Vendas'
 
-worksheet3 = 'Base_Carretas'
-
 # filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
 # filename = "service_account.json"
 
@@ -60,7 +58,6 @@ sh = sa.open(name_sheet)
 
 wks1 = sh.worksheet(worksheet1)
 wks2 = sh.worksheet(worksheet2)
-wks3 = sh.worksheet(worksheet3)
 
 # obtendo todos os valores da planilha
 list1 = wks1.get_all_records()
