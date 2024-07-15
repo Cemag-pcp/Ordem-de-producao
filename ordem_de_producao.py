@@ -62,13 +62,23 @@ wks1 = sh.worksheet(worksheet1)
 wks2 = sh.worksheet(worksheet2)
 wks3 = sh.worksheet(worksheet3)
 
-# obtendo todos os valores da planilha
-list1 = wks1.get_all_records()
-list2 = wks2.get_all_records()
+data1 = wks1.get_all_values()
+data2 = wks2.get_all_values()
 
-# transformando em dataframe
-base_carretas = pd.DataFrame(list1)
-base_carga = pd.DataFrame(list2)
+# Convertendo para DataFrame manualmente
+headers1 = data1[0]
+rows1 = data1[1:]
+base_carretas = pd.DataFrame(rows1, columns=headers1)
+
+headers2 = data2[0]
+rows2 = data2[1:]
+
+headers2 = [header for header in data2[0] if header]  # Remove cabeçalhos vazios
+rows2 = [row[:len(headers2)] for row in data2[1:]]  # Limita as linhas ao número de cabeçalho
+base_carga = pd.DataFrame(rows2, columns=headers2)
+
+print(base_carga.head())
+print(base_carretas.head())
 
 ###### TRATANDO DADOS #########
 
