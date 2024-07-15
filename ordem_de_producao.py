@@ -75,7 +75,7 @@ base_carga = pd.DataFrame(list2)
 ##### Tratando datas######
 
 base_carga = base_carga[['PED_PREVISAOEMISSAODOC',
-                         '3o. Agrupamento', 'PED_RECURSO.CODIGO', 'PED_QUANTIDADE','PED_CHCRIACAO']]
+                         'Carga', 'PED_RECURSO.CODIGO', 'PED_QUANTIDADE','PED_CHCRIACAO']]
 base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO'].fillna(0)
 base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO'].replace('',0)
 base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO'].astype(int)
@@ -100,7 +100,6 @@ base_carga['PED_PREVISAOEMISSAODOC'] = base_carga.PED_PREVISAOEMISSAODOC.dt.strf
 #### renomeando colunas#####
 
 base_carga = base_carga.rename(columns={'PED_PREVISAOEMISSAODOC': 'Datas',
-                                        '3o. Agrupamento': 'Carga',
                                         'PED_RECURSO.CODIGO': 'Recurso',
                                         'PED_QUANTIDADE': 'Qtde'})
 
