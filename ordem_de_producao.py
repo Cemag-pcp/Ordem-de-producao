@@ -322,7 +322,7 @@ with st.sidebar:
 #     with st.sidebar:
 
 tipo_filtro = st.date_input('Data: ')
-# tipo_filtro = '06/07/2024'
+# tipo_filtro = '05/08/2024'
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
@@ -894,6 +894,11 @@ if submit_button:
         tab_completa = tab_completa.groupby(
             ['Código', 'Peca', 'Célula', 'Datas','Carga','PED_CHCRIACAO']).sum()
 
+        # tab_completa1 = tab_completa[['Código','Peca','Célula','Datas','Carga','Qtde_total']]
+
+        # tab_completa = tab_completa.groupby(
+        #     ['Código', 'Peca', 'Célula', 'Datas','Carga']).sum()
+
         # tab_completa = tab_completa.drop_duplicates()
 
         tab_completa.reset_index(inplace=True)
@@ -923,7 +928,12 @@ if submit_button:
         if carga_escolhida != 'Selecione':
             tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
         
+        # print(tab_completa.columns)
+        # tab_completa = tab_completa.groupby(
+        #     ['Código', 'Peca', 'Célula', 'Datas', 'Carga', 'PED_CHCRIACAO', 'Ano', 'codigo']).sum()
+       
         tab_completa = tab_completa.reset_index(drop=True)
+        print(tab_completa)
 
         carga_unique = tab_completa['Carga'].unique()
 
@@ -1078,68 +1088,12 @@ if submit_button:
                 my_file = "Montagem " + celulas_unique[0][i] + '.xlsx'
                 filenames.append(my_file)
 
-        # name_sheet4 = 'Base gerador de ordem de producao'
-        # worksheet4 = 'Montagem'
-
-        # sh = sa.open(name_sheet4)
-        # wks4 = sh.worksheet(worksheet4)
-
-        # list4 = wks4.get_all_records()
-        # table = pd.DataFrame(list4)
-
-        # table = table.astype(str)
-
-        # for i in range(len(table)):
-        #     if len(table['CODIGO'][i]) == 5:
-        #         table['CODIGO'][i] = '0'+table['CODIGO'][i]
-
-        # tab_completa['Carimbo'] = tipo_filtro + 'Montagem'
-        # tab_completa['Data_carga'] = tipo_filtro
-
-        # tab_completa1 = tab_completa[[
-        #     'Carimbo', 'Célula', 'Código', 'Peca', 'Qtde_total', 'Data_carga']]
-        # tab_completa1['Data_carga'] = tipo_filtro
-        # tab_completa1['Setor'] = 'Montagem'
-
-        # tab_completa_2 = tab_completa1
-
-        # table = table.loc[(table.UNICO == tipo_filtro + 'Montagem')]
-
-        # list_columns = table.columns.values.tolist()
-
-        # tab_completa_2.columns = list_columns
-
-        # frames = [table, tab_completa_2]
-
-        # table = pd.concat(frames)
-        # table['QT_ITENS'] = table['QT_ITENS'].astype(int)
-        # table = table.drop_duplicates(keep=False)
-        
-        # table = table.sort_values(by='CELULA').reset_index(drop=True)
-      
-        # # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
-        # new_rows = []
-        # for index, row in table.iterrows():
-        #     new_rows.append(row)
-        #     if index < len(table) - 1 and table.at[index, 'CELULA'] != table.at[index + 1, 'CELULA']:
-        #         new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
-        #     elif index == len(table) - 1:
-        #         new_rows.append(pd.Series(['', table.at[index, 'CELULA'], '', '', '', table.at[index, 'DATA DA CARGA'], ''], index=table.columns))
-        
-        # new_df = pd.DataFrame(new_rows).reset_index(drop=True)
-
         data_formatada = datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d')
         tab_completa['Datas'] = data_formatada
         ped_chcriacao = tab_completa['PED_CHCRIACAO'][0]
 
         data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas','PED_CHCRIACAO']].values.tolist()
         
-        # ultima_linha = ['','','','','',tipo_filtro,'']
-        # tab_completa1.append(ultima_linha)
-        
-        # data = '20/01/2024'
-        # datetime.strptime(data,'%d/%m/%Y').strftime('%Y-%d-%m')
-
         insert_montagem(str(ped_chcriacao),datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
     
     if setor == 'Solda':   
@@ -2325,6 +2279,7 @@ if submit_button:
     base_carga_filtro = base_carga_filtro[['Recurso', 'Qtde']]
     base_carga_filtro['Qtde'] = base_carga_filtro['Qtde'].astype(int)
     base_carga_filtro = base_carga_filtro.groupby('Recurso').sum()
+    print(base_carga_filtro)
 
     try:
         tab_completa[['Célula', 'Código', 'Peca', 'Qtde_total', 'cor']]
