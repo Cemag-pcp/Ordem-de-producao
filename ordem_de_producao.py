@@ -72,23 +72,7 @@ base_carga = pd.DataFrame(list2)
 
 ##### Tratando datas######
 
-base_carga = base_carga[['PED_PREVISAOEMISSAODOC',
-                         'Carga', 'PED_RECURSO.CODIGO', 'PED_QUANTIDADE','PED_CHCRIACAO']]
-base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO'].fillna(0)
-base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO'].replace('',0)
-base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO'].astype(int)
-
-soma_por_data = base_carga.groupby('PED_PREVISAOEMISSAODOC')['PED_CHCRIACAO'].sum().reset_index()
-soma_por_data = soma_por_data.rename(columns={'PED_CHCRIACAO': 'PED_CHCRIACAO_SUM'})
-# Mesclar o dataframe original com o dataframe de somas por data
-base_carga = base_carga.merge(soma_por_data, on='PED_PREVISAOEMISSAODOC')
-
-# Repetir a soma de 'PED_CHCRIACAO_SUM' para todas as linhas correspondentes a cada data
-base_carga['PED_CHCRIACAO'] = base_carga['PED_CHCRIACAO_SUM']
-
-# Excluir a coluna 'PED_CHCRIACAO_SUM', se não for mais necessária
-base_carga = base_carga.drop(columns=['PED_CHCRIACAO_SUM'])
-
+base_carga = base_carga[['PED_PREVISAOEMISSAODOC','Carga','PED_RECURSO.CODIGO', 'PED_QUANTIDADE']]
 base_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(
     base_carga['PED_PREVISAOEMISSAODOC'], format='%d/%m/%Y', errors='coerce')
 base_carga['Ano'] = base_carga['PED_PREVISAOEMISSAODOC'].dt.strftime('%Y')
@@ -336,7 +320,7 @@ if tipo_filtro:
 
 submit_button = st.button(label='Gerar')
 
-def insert_pintura(ped_chcriacao,data_carga,dados):
+def insert_pintura(data_carga, dados):
     
     # data_carga = datetime.strptime(data_carga,'%d/%m/%Y').strftime('%Y-%m-%d')
 
@@ -344,30 +328,34 @@ def insert_pintura(ped_chcriacao,data_carga,dados):
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Exclui os registros com a data_carga fornecida
-    sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE ped_chcriacao = %s or data_carga = %s::date'
-    cur.execute(sql_delete, (ped_chcriacao,data_carga))
+    sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s::date;'
+    cur.execute(sql_delete, (data_carga,))
     
+    print(sql_delete)
+
+    conn.commit()
+
     for dado in dados:
         # Construir e executar a consulta INSERT
-        query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga, ped_chcriacao) VALUES (%s, %s, %s, %s, %s, %s::date, %s)")
+        query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s::date)")
         cur.execute(query, dado)
 
     # Commit para aplicar as alterações
     conn.commit()
 
-def insert_montagem(ped_chcriacao,data_carga, dados):
+def insert_montagem(data_carga, dados):
     
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Exclui os registros com a data_carga fornecida
-    sql_delete = 'DELETE FROM pcp.gerador_ordens_montagem WHERE ped_chcriacao = %s or data_carga = %s;'
-    cur.execute(sql_delete, (ped_chcriacao,data_carga))
+    sql_delete = 'DELETE FROM pcp.gerador_ordens_montagem WHERE data_carga = %s;'
+    cur.execute(sql_delete, (data_carga,))
     conn.commit()
 
     for dado in dados:
         # Construir e executar a consulta INSERT
-        query = ("INSERT INTO pcp.gerador_ordens_montagem (celula, codigo, peca, qt_planejada, data_carga, ped_chcriacao) VALUES (%s, %s, %s, %s, %s, %s)")
+        query = ("INSERT INTO pcp.gerador_ordens_montagem (celula, codigo, peca, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s)")
         cur.execute(query, dado)
 
     # Commit para aplicar as alterações
@@ -574,7 +562,7 @@ if submit_button:
             columns=['Recurso', 'Qtde_x', 'Qtde_y', 'LEAD TIME', 'flag peça', 'Etapa2'])
 
         tab_completa = tab_completa.groupby(
-            ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor','Carga','PED_CHCRIACAO']).sum()
+            ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor','Carga']).sum()
         tab_completa.reset_index(inplace=True)
 
         # linha abaixo exclui eixo simples do sequenciamento da pintura
@@ -773,17 +761,15 @@ if submit_button:
                     my_file = "Pintura " + cor_unique[i] +'.xlsx'
                     filenames.append(my_file)
             
-        data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas', 'PED_CHCRIACAO']]
-        data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas','PED_CHCRIACAO']).sum().reset_index()[['Célula','Código','Peca','cor','Qtde_total','Datas','PED_CHCRIACAO']]
+        data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
+        data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()[['Célula','Código','Peca','cor','Qtde_total','Datas']]
         data_insert_sql['Datas'] = pd.to_datetime(data_insert_sql['Datas'], format='%d/%m/%Y')
-        # data_insert_sql['Datas'] = data_insert_sql['Datas'].dt.strftime("%Y-%m-%d")
-        ped_chcriacao = data_insert_sql['PED_CHCRIACAO'][0]
 
         data_insert_sql = data_insert_sql.values.tolist()
 
         # data_formatada = datetime.strptime(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'),'%Y-%m-%d').date()
         tipo_filtro = pd.to_datetime(tipo_filtro, format='%d/%m/%Y')
-        insert_pintura(ped_chcriacao,tipo_filtro,data_insert_sql)
+        insert_pintura(tipo_filtro, data_insert_sql)
 
         # excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
 
@@ -892,7 +878,7 @@ if submit_button:
             columns=['Recurso', 'Qtde_x', 'Qtde_y'])
 
         tab_completa = tab_completa.groupby(
-            ['Código', 'Peca', 'Célula', 'Datas','Carga','PED_CHCRIACAO']).sum()
+            ['Código', 'Peca', 'Célula', 'Datas','Carga']).sum()
 
         # tab_completa1 = tab_completa[['Código','Peca','Célula','Datas','Carga','Qtde_total']]
 
@@ -1090,11 +1076,9 @@ if submit_button:
 
         data_formatada = datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d')
         tab_completa['Datas'] = data_formatada
-        ped_chcriacao = tab_completa['PED_CHCRIACAO'][0]
-
-        data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas','PED_CHCRIACAO']].values.tolist()
+        data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas']].values.tolist()
         
-        insert_montagem(str(ped_chcriacao),datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
+        insert_montagem(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
     
     if setor == 'Solda':   
     
