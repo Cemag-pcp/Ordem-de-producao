@@ -72,7 +72,7 @@ base_carga = pd.DataFrame(list2)
 
 ##### Tratando datas######
 
-base_carga = base_carga[['PED_PREVISAOEMISSAODOC','Carga','PED_RECURSO.CODIGO', 'PED_QUANTIDADE']]
+base_carga = base_carga[['PED_PREVISAOEMISSAODOC','PED_RECURSO.CODIGO', 'PED_QUANTIDADE']]
 base_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(
     base_carga['PED_PREVISAOEMISSAODOC'], format='%d/%m/%Y', errors='coerce')
 base_carga['Ano'] = base_carga['PED_PREVISAOEMISSAODOC'].dt.strftime('%Y')
@@ -314,9 +314,9 @@ setor = st.selectbox('Escolha o setor', values)
 if tipo_filtro:
 
     cargas_disponiveis = base_carga[base_carga['Datas'] == tipo_filtro]
-    cargas_disponiveis = cargas_disponiveis['Carga'].unique()
-    values_cargas = ['Selecione'] + cargas_disponiveis.tolist()
-    carga_escolhida = st.selectbox('Selecione', values_cargas)
+    # cargas_disponiveis = cargas_disponiveis['Carga'].unique()
+    # values_cargas = ['Selecione'] + cargas_disponiveis.tolist()
+    # carga_escolhida = st.selectbox('Selecione', values_cargas)
 
 submit_button = st.button(label='Gerar')
 
@@ -562,7 +562,7 @@ if submit_button:
             columns=['Recurso', 'Qtde_x', 'Qtde_y', 'LEAD TIME', 'flag peça', 'Etapa2'])
 
         tab_completa = tab_completa.groupby(
-            ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor','Carga']).sum()
+            ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum()
         tab_completa.reset_index(inplace=True)
 
         # linha abaixo exclui eixo simples do sequenciamento da pintura
@@ -637,12 +637,12 @@ if submit_button:
 
         st.write("Arquivos para download")
 
-        if carga_escolhida != 'Selecione':
-            tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
+        # if carga_escolhida != 'Selecione':
+        #     tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
         
         tab_completa = tab_completa.reset_index(drop=True)
 
-        carga_unique = tab_completa['Carga'].unique()
+        # carga_unique = tab_completa['Carga'].unique()
 
         # for carga in carga_unique:
             
@@ -682,8 +682,8 @@ if submit_button:
                         ws['Q3'] = consumo_po
                         ws['AE3'] = consumo_pu
                         ws['AN3'] = diluente
-                        if carga_escolhida != 'Selecione':
-                            ws['AH4'] = carga_escolhida
+                        # if carga_escolhida != 'Selecione':
+                        #     ws['AH4'] = carga_escolhida
                         k = k + 1
 
                     wb.template = False
@@ -722,8 +722,8 @@ if submit_button:
                             ws['Q3'] = consumo_po
                             ws['AE3'] = consumo_pu
                             ws['AN3'] = diluente
-                            if carga_escolhida != 'Selecione':
-                                ws['AH4'] = carga_escolhida
+                            # if carga_escolhida != 'Selecione':
+                            #     ws['AH4'] = carga_escolhida
 
                             k = k + 1
 
@@ -748,8 +748,8 @@ if submit_button:
                         ws['Q3'] = consumo_po
                         ws['AE3'] = consumo_pu
                         ws['AN3'] = diluente
-                        if carga_escolhida != 'Selecione':
-                            ws['AH4'] = carga_escolhida
+                        # if carga_escolhida != 'Selecione':
+                        #     ws['AH4'] = carga_escolhida
 
                         k = k + 1
 
@@ -878,7 +878,7 @@ if submit_button:
             columns=['Recurso', 'Qtde_x', 'Qtde_y'])
 
         tab_completa = tab_completa.groupby(
-            ['Código', 'Peca', 'Célula', 'Datas','Carga']).sum()
+            ['Código', 'Peca', 'Célula', 'Datas']).sum()
 
         # tab_completa1 = tab_completa[['Código','Peca','Célula','Datas','Carga','Qtde_total']]
 
@@ -911,17 +911,16 @@ if submit_button:
 
         k = 9
 
-        if carga_escolhida != 'Selecione':
-            tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
+        # if carga_escolhida != 'Selecione':
+        #     tab_completa = tab_completa[tab_completa['Carga'] == carga_escolhida]
         
         # print(tab_completa.columns)
         # tab_completa = tab_completa.groupby(
         #     ['Código', 'Peca', 'Célula', 'Datas', 'Carga', 'PED_CHCRIACAO', 'Ano', 'codigo']).sum()
        
         tab_completa = tab_completa.reset_index(drop=True)
-        print(tab_completa)
 
-        carga_unique = tab_completa['Carga'].unique()
+        # carga_unique = tab_completa['Carga'].unique()
 
         # for carga in carga_unique:
             
@@ -945,8 +944,8 @@ if submit_button:
 
                 for j in range(0, 21):
                     
-                    if carga_escolhida != 'Selecione':
-                        ws['B3'] = carga_escolhida
+                    # if carga_escolhida != 'Selecione':
+                    #     ws['B3'] = carga_escolhida
                     
                     ws['G5'] = celulas_unique[0][i]  # nome da coluna é '0'
                     ws['AD5'] = hoje  # data de hoje
@@ -998,8 +997,8 @@ if submit_button:
 
                     for j in range(21, len(filtrar)):
                         
-                        if carga_escolhida != 'Selecione':
-                            ws['B3'] = carga_escolhida
+                        # if carga_escolhida != 'Selecione':
+                        #     ws['B3'] = carga_escolhida
 
                         ws['G5'] = celulas_unique[0][i]  # nome da coluna é '0'
                         ws['AD5'] = hoje  # data de hoje
@@ -1038,8 +1037,8 @@ if submit_button:
 
                 for j in range(0, 21-(21-len(filtrar))):
                     
-                    if carga_escolhida != 'Selecione':
-                        ws['B3'] = carga_escolhida
+                    # if carga_escolhida != 'Selecione':
+                    #     ws['B3'] = carga_escolhida
 
                     ws['G5'] = celulas_unique[0][i]  # nome da coluna é '0'
                     ws['AD5'] = hoje  # data de hoje
@@ -1156,7 +1155,7 @@ if submit_button:
             tab_completa['Qtde_y']
 
         tab_completa = tab_completa.drop(
-            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y'])
+            columns=['Recurso', 'Qtde_x', 'Qtde_y'])
 
         tab_completa = tab_completa.groupby(
             ['Código', 'Peca', 'Célula', 'Datas']).sum()
@@ -1433,7 +1432,7 @@ if submit_button:
             tab_completa['Qtde_y']
 
         tab_completa = tab_completa.drop(
-            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y'])
+            columns=['Recurso', 'Qtde_x', 'Qtde_y'])
 
         tab_completa = tab_completa.groupby(
             ['Código', 'Peca', 'Célula', 'Datas']).sum()
@@ -1715,7 +1714,7 @@ if submit_button:
             tab_completa['Qtde_y']
 
         tab_completa = tab_completa.drop(
-            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y'])
+            columns=['Recurso', 'Qtde_x', 'Qtde_y'])
 
         tab_completa = tab_completa.groupby(
             ['Código', 'Peca', 'Célula', 'Datas']).sum()
@@ -2019,7 +2018,7 @@ if submit_button:
             tab_completa['Qtde_y']
 
         tab_completa = tab_completa.drop(
-            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y'])
+            columns=['Recurso', 'Qtde_x', 'Qtde_y'])
 
         tab_completa = tab_completa.groupby(
             ['Código', 'Peca', 'Célula', 'Datas']).sum()
@@ -2175,7 +2174,7 @@ if submit_button:
             tab_completa['Qtde_y']
 
         tab_completa = tab_completa.drop(
-            columns=['Carga', 'Recurso', 'Qtde_x', 'Qtde_y', 'LEAD TIME', 'flag peça', 'Etapa2'])
+            columns=['Recurso', 'Qtde_x', 'Qtde_y', 'LEAD TIME', 'flag peça', 'Etapa2'])
 
         tab_completa = tab_completa.groupby(
             ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum()
