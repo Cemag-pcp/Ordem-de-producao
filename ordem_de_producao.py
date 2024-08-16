@@ -8,6 +8,7 @@ import gspread
 import streamlit as st
 import time
 import zipfile
+import time
 
 from datetime import datetime
 from datetime import timedelta
@@ -33,6 +34,7 @@ service_account_info = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
 scope = ['https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive"]
 
+
 credentials = service_account.Credentials.from_service_account_info(service_account_info, scopes=scope)
 
 sa = gspread.authorize(credentials)
@@ -45,25 +47,31 @@ st.write("https://docs.google.com/spreadsheets/d/18ZXL8n47qSLFLVO5tBj7-ADpqmMyFw
 st.write("Planilha que guarda ordens geradas")
 st.write("https://docs.google.com/spreadsheets/d/1IOgFhVTBtlHNBG899QqwlqxYlMcucTx74zRA29YBHKA/edit#gid=1228486917")
 
-name_sheet = 'Bases para sequenciamento'
+@st.cache_data
+def planilhas():
 
-worksheet1 = 'Base_Carretas'
-worksheet2 = 'Carga_Vendas'
+    name_sheet = 'Bases para sequenciamento'
 
-#
-# filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
-# filename = "service_account.json"
+    worksheet1 = 'Base_Carretas'
+    worksheet2 = 'Carga_Vendas'
 
-# sa = gspread.service_account(filename)
-sh = sa.open(name_sheet)
+    # filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
+    # filename = "service_account.json"
 
-wks1 = sh.worksheet(worksheet1)
-wks2 = sh.worksheet(worksheet2)
+    # sa = gspread.service_account(filename)
+    sh = sa.open(name_sheet)
 
-# obtendo todos os valores da planilha
-list1 = wks1.get_all_records()
-list2 = wks2.get_all_records()
+    wks1 = sh.worksheet(worksheet1)
+    wks2 = sh.worksheet(worksheet2)
 
+    # obtendo todos os valores da planilha
+    list1 = wks1.get_all_records()
+    time.sleep(2)
+    list2 = wks2.get_all_records()
+
+    return list1,list2
+
+list1,list2 = planilhas()
 # transformando em dataframe
 base_carretas = pd.DataFrame(list1)
 base_carga = pd.DataFrame(list2)
@@ -277,20 +285,30 @@ def str_to_float(stringNumber):
     return float(transformed)
 # Lendo tabela com consumo de cores
 
-# Abra a planilha pelo seu URL (key)
-planilha = sa.open_by_key("1RJH3k5brgO3nmEQPNOKdp_HFqVbJMUcwGEQ1XQyHtCs")
+if st.button("Limpar cache", on_click=planilhas.clear):
+    planilhas.clear()
 
-# Acesse a aba desejada
-aba = planilha.worksheet("CONSUMO PU")
-valores = aba.get()
+@st.cache_data
+def dados_pintura():
+    # Abra a planilha pelo seu URL (key)
+    planilha = sa.open_by_key("1RJH3k5brgO3nmEQPNOKdp_HFqVbJMUcwGEQ1XQyHtCs")
 
-lista_columns_consumo = valores[0]
-valores = valores[1:]
+    # Acesse a aba desejada
+    aba = planilha.worksheet("CONSUMO PU")
+    time.sleep(2)
+    valores = aba.get()
 
-df_consumo_pu = pd.DataFrame(columns=lista_columns_consumo, data=valores)
-df_consumo_pu['Consumo Pó (kg)'] = df_consumo_pu['Consumo Pó (kg)'].apply(str_to_float)
-df_consumo_pu["Consumo PU (L)"] = df_consumo_pu["Consumo PU (L)"].apply(str_to_float)
-df_consumo_pu["Consumo Catalisador (L)"] = df_consumo_pu["Consumo Catalisador (L)"].apply(str_to_float)
+    lista_columns_consumo = valores[0]
+    valores = valores[1:]
+
+    df_consumo_pu = pd.DataFrame(columns=lista_columns_consumo, data=valores)
+    df_consumo_pu['Consumo Pó (kg)'] = df_consumo_pu['Consumo Pó (kg)'].apply(str_to_float)
+    df_consumo_pu["Consumo PU (L)"] = df_consumo_pu["Consumo PU (L)"].apply(str_to_float)
+    df_consumo_pu["Consumo Catalisador (L)"] = df_consumo_pu["Consumo Catalisador (L)"].apply(str_to_float)
+
+    return df_consumo_pu
+
+df_consumo_pu = dados_pintura()
 
 def unique(list1):
     x = np.array(list1)
