@@ -9,6 +9,7 @@ import streamlit as st
 import time
 import zipfile
 import time
+import random
 
 from datetime import datetime
 from datetime import timedelta
@@ -34,7 +35,6 @@ service_account_info = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
 scope = ['https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive"]
 
-
 credentials = service_account.Credentials.from_service_account_info(service_account_info, scopes=scope)
 
 sa = gspread.authorize(credentials)
@@ -47,31 +47,66 @@ st.write("https://docs.google.com/spreadsheets/d/18ZXL8n47qSLFLVO5tBj7-ADpqmMyFw
 st.write("Planilha que guarda ordens geradas")
 st.write("https://docs.google.com/spreadsheets/d/1IOgFhVTBtlHNBG899QqwlqxYlMcucTx74zRA29YBHKA/edit#gid=1228486917")
 
-@st.cache_data
-def planilhas():
+maximum_backoff = 64  # Valor máximo em segundos
+max_retries = 5  # Número máximo de tentativas
 
-    name_sheet = 'Bases para sequenciamento'
+def get_all_records_with_backoff(worksheet):
+    attempt = 0
 
-    worksheet1 = 'Base_Carretas'
-    worksheet2 = 'Carga_Vendas'
+    while attempt < max_retries:
+        try:
+            # Tenta obter os registros
+            # sh = sa.open_by_key(name_sheet)
+            records = worksheet.get_all_records()
+            return records  # Retorna os registros se bem-sucedido
 
-    # filename = r"C:\Users\pcp2\ordem de producao\Ordem-de-producao\service_account.json"
-    # filename = "service_account.json"
+        except Exception as e:
+            attempt += 1
+            if attempt >= max_retries:
+                print(f"Falha ao obter dados após {attempt} tentativas.")
+                raise e  # Re-lança a exceção após o número máximo de tentativas
 
-    # sa = gspread.service_account(filename)
-    sh = sa.open(name_sheet)
+            # Cálculo do tempo de espera exponencial com backoff
+            wait_time = min(((2 ** attempt) + random.randint(0, 1000) / 1000), maximum_backoff)
+            print(f"Tentativa {attempt} falhou. Esperando {wait_time:.2f} segundos antes de tentar novamente...")
+            time.sleep(wait_time)
 
-    wks1 = sh.worksheet(worksheet1)
-    wks2 = sh.worksheet(worksheet2)
+def get_all_records_with_backoff_id(id_sheet):
+    attempt = 0
 
-    # obtendo todos os valores da planilha
-    list1 = wks1.get_all_records()
-    time.sleep(2)
-    list2 = wks2.get_all_records()
+    while attempt < max_retries:
+        try:
+            # Tenta obter os registros
+            sh = sa.open_by_key(id_sheet)
+            # records = worksheet.get_all_records()
+            return sh  # Retorna os registros se bem-sucedido
 
-    return list1,list2
+        except Exception as e:
+            attempt += 1
+            if attempt >= max_retries:
+                print(f"Falha ao obter dados após {attempt} tentativas.")
+                raise e  # Re-lança a exceção após o número máximo de tentativas
 
-list1,list2 = planilhas()
+            # Cálculo do tempo de espera exponencial com backoff
+            wait_time = min(((2 ** attempt) + random.randint(0, 1000) / 1000), maximum_backoff)
+            print(f"Tentativa {attempt} falhou. Esperando {wait_time:.2f} segundos antes de tentar novamente...")
+            time.sleep(wait_time)
+
+
+name_sheet = 'Bases para sequenciamento'
+id_seq = '18ZXL8n47qSLFLVO5tBj7-ADpqmMyFwCgs4cxxtBB9Xo'
+
+# sh = sa.open(name_sheet)
+sh = get_all_records_with_backoff_id(id_seq)
+
+worksheet1 = 'Base_Carretas'
+worksheet2 = 'Carga_Vendas'
+wks1 = sh.worksheet(worksheet1)
+list1 = get_all_records_with_backoff(wks1)
+
+wks2 = sh.worksheet(worksheet2)
+list2 = get_all_records_with_backoff(wks2)
+
 # transformando em dataframe
 base_carretas = pd.DataFrame(list1)
 base_carga = pd.DataFrame(list2)
@@ -285,30 +320,23 @@ def str_to_float(stringNumber):
     return float(transformed)
 # Lendo tabela com consumo de cores
 
-if st.button("Limpar cache", on_click=planilhas.clear):
-    planilhas.clear()
+# Abra a planilha pelo seu URL (key)
+id_sheet_pintura = '1RJH3k5brgO3nmEQPNOKdp_HFqVbJMUcwGEQ1XQyHtCs'
+planilha = get_all_records_with_backoff_id(id_sheet_pintura)
 
-@st.cache_data
-def dados_pintura():
-    # Abra a planilha pelo seu URL (key)
-    planilha = sa.open_by_key("1RJH3k5brgO3nmEQPNOKdp_HFqVbJMUcwGEQ1XQyHtCs")
+# Acesse a aba desejada
+aba = planilha.worksheet("CONSUMO PU")
+time.sleep(2)
+# valores = aba.get()
+valores = get_all_records_with_backoff(aba)
 
-    # Acesse a aba desejada
-    aba = planilha.worksheet("CONSUMO PU")
-    time.sleep(2)
-    valores = aba.get()
+lista_columns_consumo = valores[0]
+valores = valores[1:]
 
-    lista_columns_consumo = valores[0]
-    valores = valores[1:]
-
-    df_consumo_pu = pd.DataFrame(columns=lista_columns_consumo, data=valores)
-    df_consumo_pu['Consumo Pó (kg)'] = df_consumo_pu['Consumo Pó (kg)'].apply(str_to_float)
-    df_consumo_pu["Consumo PU (L)"] = df_consumo_pu["Consumo PU (L)"].apply(str_to_float)
-    df_consumo_pu["Consumo Catalisador (L)"] = df_consumo_pu["Consumo Catalisador (L)"].apply(str_to_float)
-
-    return df_consumo_pu
-
-df_consumo_pu = dados_pintura()
+df_consumo_pu = pd.DataFrame(columns=lista_columns_consumo, data=valores)
+df_consumo_pu['Consumo Pó (kg)'] = df_consumo_pu['Consumo Pó (kg)'].astype(str).apply(str_to_float)
+df_consumo_pu["Consumo PU (L)"] = df_consumo_pu["Consumo PU (L)"].astype(str).apply(str_to_float)
+df_consumo_pu["Consumo Catalisador (L)"] = df_consumo_pu["Consumo Catalisador (L)"].astype(str).apply(str_to_float)
 
 def unique(list1):
     x = np.array(list1)
