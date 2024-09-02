@@ -300,10 +300,6 @@ with st.sidebar:
     image = Image.open('logo-cemagL.png')
     st.image(image, width=300)
 
-# with st.form(key='my_form'):
-
-#     with st.sidebar:
-
 tipo_filtro = st.date_input('Data: ')
 # tipo_filtro = '05/08/2024'
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
@@ -317,48 +313,95 @@ if tipo_filtro:
     # values_cargas = ['Selecione'] + cargas_disponiveis.tolist()
     # carga_escolhida = st.selectbox('Selecione', values_cargas)
 
+check_atualizar_base_carga = st.checkbox('Atualizar base com novos dados?', value=True)
+
 submit_button = st.button(label='Gerar')
 
-def insert_pintura(data_carga, dados):
+def insert_pintura(data_carga, dados, check_atualizar_base_carga):
     
     # data_carga = datetime.strptime(data_carga,'%d/%m/%Y').strftime('%Y-%m-%d')
 
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Exclui os registros com a data_carga fornecida
-    sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s::date;'
-    cur.execute(sql_delete, (data_carga,))
-    
-    print(sql_delete)
+    # Verifica se existe registros com a data atual
+    sql_select = 'SELECT * FROM pcp.gerador_ordens_pintura where data_carga = %s'
+    cur.execute(sql_select,(data_carga,))
+    dados_existente = cur.fetchall()
 
-    conn.commit()
+    if len(dados_existente) > 0:
+        if check_atualizar_base_carga:
+            # Exclui os registros com a data_carga fornecida
+            sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s::date;'
+            cur.execute(sql_delete, (data_carga,))
+            
+            conn.commit()
 
-    for dado in dados:
-        # Construir e executar a consulta INSERT
-        query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s::date)")
-        cur.execute(query, dado)
+            for dado in dados:
+                # Construir e executar a consulta INSERT
+                query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s::date)")
+                cur.execute(query, dado)
 
-    # Commit para aplicar as alterações
-    conn.commit()
+            # Commit para aplicar as alterações
+            conn.commit()
+    else:
 
-def insert_montagem(data_carga, dados):
+        # Exclui os registros com a data_carga fornecida
+        sql_delete = 'DELETE FROM pcp.gerador_ordens_pintura WHERE data_carga = %s::date;'
+        cur.execute(sql_delete, (data_carga,))
+        
+        print(sql_delete)
+
+        conn.commit()
+
+        for dado in dados:
+            # Construir e executar a consulta INSERT
+            query = ("INSERT INTO pcp.gerador_ordens_pintura (celula, codigo, peca, cor, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s, %s::date)")
+            cur.execute(query, dado)
+
+        # Commit para aplicar as alterações
+        conn.commit()
+
+def insert_montagem(data_carga, dados, check_atualizar_base_carga):
     
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Verifica se existe registros com a data atual
+    sql_select = 'SELECT * FROM pcp.gerador_ordens_montagem where data_carga = %s'
+    cur.execute(sql_select,(data_carga,))
+    dados_existente = cur.fetchall()
 
-    # Exclui os registros com a data_carga fornecida
-    sql_delete = 'DELETE FROM pcp.gerador_ordens_montagem WHERE data_carga = %s;'
-    cur.execute(sql_delete, (data_carga,))
-    conn.commit()
+    if len(dados_existente) > 0:
+        if check_atualizar_base_carga:
 
-    for dado in dados:
-        # Construir e executar a consulta INSERT
-        query = ("INSERT INTO pcp.gerador_ordens_montagem (celula, codigo, peca, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s)")
-        cur.execute(query, dado)
+            # Exclui os registros com a data_carga fornecida
+            sql_delete = 'DELETE FROM pcp.gerador_ordens_montagem WHERE data_carga = %s;'
+            cur.execute(sql_delete, (data_carga,))
+            conn.commit()
 
-    # Commit para aplicar as alterações
-    conn.commit()
+            for dado in dados:
+                # Construir e executar a consulta INSERT
+                query = ("INSERT INTO pcp.gerador_ordens_montagem (celula, codigo, peca, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s)")
+                cur.execute(query, dado)
+
+            # Commit para aplicar as alterações
+            conn.commit()
+
+    else:
+
+        # Exclui os registros com a data_carga fornecida
+        sql_delete = 'DELETE FROM pcp.gerador_ordens_montagem WHERE data_carga = %s;'
+        cur.execute(sql_delete, (data_carga,))
+        conn.commit()
+
+        for dado in dados:
+            # Construir e executar a consulta INSERT
+            query = ("INSERT INTO pcp.gerador_ordens_montagem (celula, codigo, peca, qt_planejada, data_carga) VALUES (%s, %s, %s, %s, %s)")
+            cur.execute(query, dado)
+
+        # Commit para aplicar as alterações
+        conn.commit()
 
 def tratar_conjuntos_iguais(base_carretas,base_carga):
 
@@ -1076,8 +1119,8 @@ if submit_button:
         tab_completa['Datas'] = data_formatada
         data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas']].values.tolist()
         
-        insert_montagem(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql)
-    
+        insert_montagem(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql, check_atualizar_base_carga)
+
     if setor == 'Solda':   
     
         #####colunas de códigos#####
