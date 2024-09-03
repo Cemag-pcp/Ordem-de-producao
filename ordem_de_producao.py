@@ -811,7 +811,7 @@ if submit_button:
 
         # data_formatada = datetime.strptime(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'),'%Y-%m-%d').date()
         tipo_filtro = pd.to_datetime(tipo_filtro, format='%d/%m/%Y')
-        insert_pintura(tipo_filtro, data_insert_sql)
+        insert_pintura(tipo_filtro, data_insert_sql, check_atualizar_base_carga)
 
         # excel_etiquetas = gerar_etiquetas(tipo_filtro,tab_completa)
 
