@@ -313,7 +313,7 @@ if tipo_filtro:
     # values_cargas = ['Selecione'] + cargas_disponiveis.tolist()
     # carga_escolhida = st.selectbox('Selecione', values_cargas)
 
-check_atualizar_base_carga = st.checkbox('Atualizar base com novos dados?', value=True)
+check_atualizar_base_carga = st.checkbox('Atualizar base com novos dados?', value=False)
 
 submit_button = st.button(label='Gerar')
 
