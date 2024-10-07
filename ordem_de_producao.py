@@ -71,6 +71,7 @@ base_carga = pd.DataFrame(list2)
 
 ##### Tratando datas######
 
+dados_carga = base_carga
 base_carga = base_carga[['PED_PREVISAOEMISSAODOC','PED_RECURSO.CODIGO', 'PED_QUANTIDADE']]
 base_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(
     base_carga['PED_PREVISAOEMISSAODOC'], format='%d/%m/%Y', errors='coerce')
@@ -96,6 +97,47 @@ ts = pd.Timestamp(today)
 today = today.strftime('%d/%m/%Y')
 
 filenames = []
+
+def consultar_carretas(data_inicial,data_final):
+
+    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
+                            password=DB_PASS, host=DB_HOST)
+    
+    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN']
+
+    dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(
+        lambda x: x[:-3] if str(x)[-2:] in sufixos_para_remover else x)
+
+    dados_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(dados_carga['PED_PREVISAOEMISSAODOC'])
+    
+    dados_carga_data_filtrada = dados_carga[(dados_carga['PED_PREVISAOEMISSAODOC'] >= data_inicial) & (dados_carga['PED_PREVISAOEMISSAODOC'] <= data_final)]
+
+    # dados_carga_data_filtrada['PED_QUANTIDADE'] = dados_carga_data_filtrada['PED_QUANTIDADE'].apply(lambda x: x.replace(',','.'))
+    dados_carga_data_filtrada['PED_QUANTIDADE'] = dados_carga_data_filtrada['PED_QUANTIDADE'].astype(float)
+    carretas_unica = dados_carga_data_filtrada[['PED_RECURSO.CODIGO','PED_QUANTIDADE']]
+    agrupado = carretas_unica.groupby('PED_RECURSO.CODIGO')['PED_QUANTIDADE'].sum()
+    agrupado = agrupado.reset_index()
+
+    nomes_carretas = list(agrupado['PED_RECURSO.CODIGO'])
+
+    # Se houver apenas uma carreta, converta para uma única string
+    if len(nomes_carretas) == 1:
+        nomes_carretas_str = nomes_carretas[0]
+    else:
+        nomes_carretas_str = ', '.join(f"'{carreta}'" for carreta in nomes_carretas)
+    
+    sql_consulta = f"""select * from pcp.tb_base_carretas_explodidas where carreta in ({nomes_carretas_str})"""
+    df_explodido = pd.read_sql_query(sql_consulta,conn)
+
+    # print(df_explodido[df_explodido['etapa_seguinte']=='S Usinagem'])
+    # print(agrupado)
+    # print(df_final[(df_final['etapa_seguinte']=='S Usinagem') & (df_final['processo']=='Fueiro')])
+
+    carretas_dentro_da_base=df_explodido.merge(dados_carga_data_filtrada,how='right',left_on='carreta',right_on='PED_RECURSO.CODIGO')
+
+    carretas_dentro_da_base = carretas_dentro_da_base[['PED_RECURSO.CODIGO','carreta']].drop_duplicates().fillna('').values.tolist()
+
+    return carretas_dentro_da_base
 
 def gerar_etiquetas_montagem(tipo_filtro,df):
     
@@ -302,7 +344,20 @@ with st.sidebar:
 
 tipo_filtro = st.date_input('Data: ')
 # tipo_filtro = '05/08/2024'
+data_inicio = tipo_filtro
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
+data_inicio = data_inicio.strftime("%Y-%m-%d")
+
+carretas_na_base = consultar_carretas(data_inicio,data_inicio)
+df = pd.DataFrame(carretas_na_base, columns=['Código Carreta', 'Contém na Base'])
+
+# Substituir valores conforme a condição
+df['Status'] = df['Contém na Base'].apply(lambda x: '✅' if x else '❌')
+
+# Exibir a tabela no Streamlit
+st.write("Tabela de Carretas:")
+st.dataframe(df[['Código Carreta', 'Status']])
+
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
 
