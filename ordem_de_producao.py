@@ -100,9 +100,6 @@ filenames = []
 
 def consultar_carretas(data_inicial,data_final):
 
-    conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER,
-                            password=DB_PASS, host=DB_HOST)
-    
     sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN']
 
     dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(
@@ -116,28 +113,9 @@ def consultar_carretas(data_inicial,data_final):
     dados_carga_data_filtrada['PED_QUANTIDADE'] = dados_carga_data_filtrada['PED_QUANTIDADE'].astype(float)
     carretas_unica = dados_carga_data_filtrada[['PED_RECURSO.CODIGO','PED_QUANTIDADE']]
     agrupado = carretas_unica.groupby('PED_RECURSO.CODIGO')['PED_QUANTIDADE'].sum()
-    agrupado = agrupado.reset_index()
+    agrupado = agrupado.reset_index().values.tolist()
 
-    nomes_carretas = list(agrupado['PED_RECURSO.CODIGO'])
-
-    # Se houver apenas uma carreta, converta para uma única string
-    if len(nomes_carretas) == 1:
-        nomes_carretas_str = nomes_carretas[0]
-    else:
-        nomes_carretas_str = ', '.join(f"'{carreta}'" for carreta in nomes_carretas)
-    
-    sql_consulta = f"""select * from pcp.tb_base_carretas_explodidas where carreta in ({nomes_carretas_str})"""
-    df_explodido = pd.read_sql_query(sql_consulta,conn)
-
-    # print(df_explodido[df_explodido['etapa_seguinte']=='S Usinagem'])
-    # print(agrupado)
-    # print(df_final[(df_final['etapa_seguinte']=='S Usinagem') & (df_final['processo']=='Fueiro')])
-
-    carretas_dentro_da_base=df_explodido.merge(dados_carga_data_filtrada,how='right',left_on='carreta',right_on='PED_RECURSO.CODIGO')
-
-    carretas_dentro_da_base = carretas_dentro_da_base[['PED_RECURSO.CODIGO','carreta']].drop_duplicates().fillna('').values.tolist()
-
-    return carretas_dentro_da_base
+    return agrupado
 
 def gerar_etiquetas_montagem(tipo_filtro,df):
     
@@ -349,14 +327,11 @@ tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 data_inicio = data_inicio.strftime("%Y-%m-%d")
 
 carretas_na_base = consultar_carretas(data_inicio,data_inicio)
-df = pd.DataFrame(carretas_na_base, columns=['Código Carreta', 'Contém na Base'])
-
-# Substituir valores conforme a condição
-df['Status'] = df['Contém na Base'].apply(lambda x: '✅' if x else '❌')
+df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Quantidade'])
 
 # Exibir a tabela no Streamlit
 st.write("Tabela de Carretas:")
-st.dataframe(df[['Código Carreta', 'Status']])
+st.dataframe(df[['Código Carreta','Quantidade']],width=400)
 
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
