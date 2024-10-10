@@ -72,6 +72,7 @@ base_carga = pd.DataFrame(list2)
 ##### Tratando datas######
 
 dados_carga = base_carga
+dados_carreta = base_carretas
 base_carga = base_carga[['PED_PREVISAOEMISSAODOC','PED_RECURSO.CODIGO', 'PED_QUANTIDADE']]
 base_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(
     base_carga['PED_PREVISAOEMISSAODOC'], format='%d/%m/%Y', errors='coerce')
@@ -98,7 +99,7 @@ today = today.strftime('%d/%m/%Y')
 
 filenames = []
 
-def consultar_carretas(data_inicial,data_final):
+def consultar_carretas(data_inicial, data_final):
 
     sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN']
 
@@ -106,16 +107,21 @@ def consultar_carretas(data_inicial,data_final):
         lambda x: x[:-3] if str(x)[-2:] in sufixos_para_remover else x)
 
     dados_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(dados_carga['PED_PREVISAOEMISSAODOC'])
-    
+
     dados_carga_data_filtrada = dados_carga[(dados_carga['PED_PREVISAOEMISSAODOC'] >= data_inicial) & (dados_carga['PED_PREVISAOEMISSAODOC'] <= data_final)]
 
-    # dados_carga_data_filtrada['PED_QUANTIDADE'] = dados_carga_data_filtrada['PED_QUANTIDADE'].apply(lambda x: x.replace(',','.'))
     dados_carga_data_filtrada['PED_QUANTIDADE'] = dados_carga_data_filtrada['PED_QUANTIDADE'].astype(float)
-    carretas_unica = dados_carga_data_filtrada[['PED_RECURSO.CODIGO','PED_QUANTIDADE']]
-    agrupado = carretas_unica.groupby('PED_RECURSO.CODIGO')['PED_QUANTIDADE'].sum()
-    agrupado = agrupado.reset_index().values.tolist()
 
-    return agrupado
+    carretas_unica = dados_carga_data_filtrada[['PED_RECURSO.CODIGO','PED_QUANTIDADE']]
+    agrupado = carretas_unica.groupby('PED_RECURSO.CODIGO')['PED_QUANTIDADE'].sum().reset_index()
+
+    agrupado['Contém'] = agrupado['PED_RECURSO.CODIGO'].apply(
+        lambda x: '✅' if x in dados_carreta['Recurso'].values else '❌'
+    )
+
+    resultado = agrupado.values.tolist()
+
+    return resultado
 
 def gerar_etiquetas_montagem(tipo_filtro,df):
     
@@ -327,11 +333,11 @@ tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 data_inicio = data_inicio.strftime("%Y-%m-%d")
 
 carretas_na_base = consultar_carretas(data_inicio,data_inicio)
-df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Quantidade'])
+df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Contém','Quantidade'])
 
 # Exibir a tabela no Streamlit
 st.write("Tabela de Carretas:")
-st.dataframe(df[['Código Carreta','Quantidade']],width=400)
+st.dataframe(df[['Código Carreta','Contém','Quantidade']],width=400)
 
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
