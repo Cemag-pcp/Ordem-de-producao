@@ -331,7 +331,7 @@ tipo_filtro = st.date_input('Data: ')
 data_inicio = tipo_filtro
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 data_inicio = data_inicio.strftime("%Y-%m-%d")
-
+print('a')
 carretas_na_base = consultar_carretas(data_inicio,data_inicio)
 df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Contém','Quantidade'])
 
