@@ -333,11 +333,11 @@ tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 data_inicio = data_inicio.strftime("%Y-%m-%d")
 print('a')
 carretas_na_base = consultar_carretas(data_inicio,data_inicio)
-df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Contém','Quantidade'])
+df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Quantidade','Contém'])
 
 # Exibir a tabela no Streamlit
 st.write("Tabela de Carretas:")
-st.dataframe(df[['Código Carreta','Contém','Quantidade']],width=400)
+st.dataframe(df[['Código Carreta','Quantidade','Contém']],width=400)
 
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
