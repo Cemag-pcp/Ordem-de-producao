@@ -206,6 +206,7 @@ def gerar_etiquetas_montagem(tipo_filtro,df):
     return df
 
 def gerar_etiquetas(tipo_filtro,df,df_montagem):
+
     
     # tab_completa_montagem[tab_completa_montagem['Célula'] == 'CHASSI']
     # tab_completa[tab_completa['Célula'] == 'CHASSI']
@@ -245,29 +246,30 @@ def gerar_etiquetas(tipo_filtro,df,df_montagem):
 
     df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
     
-    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: ☐Azul  ☐Amarelo  ☐Cinza  ☐Laranja  ☐Verde  ☐Vermelho\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________" if row['cor'] != 'Cinza' else f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
-    
-    df_etiquetas_montagem = gerar_etiquetas_montagem(tipo_filtro,df_montagem)
+    # df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: ☐Azul  ☐Amarelo  ☐Cinza  ☐Laranja  ☐Verde  ☐Vermelho\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________" if row['cor'] != 'Cinza' else f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nPintura:__________Data:__________", axis=1)
 
-    df_final = pd.concat([df,df_etiquetas_montagem]).reset_index(drop=True)
+    # df_etiquetas_montagem = gerar_etiquetas_montagem(tipo_filtro,df_montagem)
+
+    # df_final = pd.concat([df,df_etiquetas_montagem]).reset_index(drop=True)
     
     # Crie um novo DataFrame com as linhas em branco e o valor da data na última linha
-    new_rows = []
-    for index, row in df_final.iterrows():
-        new_rows.append(row)
-        if index < len(df_final) - 1 and df_final.at[index, 'Célula'] != df_final.at[index + 1, 'Célula']:
-            new_rows.append(pd.Series(['']*12, index=df_final.columns))
-            new_rows.append(pd.Series(['']*12, index=df_final.columns))
-        elif index == len(df_final) - 1:
-            new_rows.append(pd.Series(['']*12, index=df_final.columns))
-            new_rows.append(pd.Series(['']*12, index=df_final.columns))
+    # new_rows = []
+    # for index, row in df_final.iterrows():
+    #     new_rows.append(row)
+    #     if index < len(df_final) - 1 and df_final.at[index, 'Célula'] != df_final.at[index + 1, 'Célula']:
+    #         new_rows.append(pd.Series(['']*12, index=df_final.columns))
+    #         new_rows.append(pd.Series(['']*12, index=df_final.columns))
+    #     elif index == len(df_final) - 1:
+    #         new_rows.append(pd.Series(['']*12, index=df_final.columns))
+    #         new_rows.append(pd.Series(['']*12, index=df_final.columns))
     
-    df_final = pd.DataFrame(new_rows).reset_index(drop=True)
+    # df_final = pd.DataFrame(new_rows).reset_index(drop=True)
 
     # Adicionar linha em branco ao final de cada grupo
 
     # Seus valores a serem anexados
-    valores = df_final['Concatenacao'].tolist()
+    valores = df['Concatenacao'].tolist()
 
     # Separar valores pares e ímpares
     valores_pares = valores[::2]
