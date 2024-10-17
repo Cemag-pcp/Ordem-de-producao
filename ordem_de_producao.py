@@ -250,7 +250,7 @@ def gerar_etiquetas(tipo_filtro,df,df_montagem):
     df['codificacao'] = df.apply(criar_codificacao, axis=1, codigo_unico=codigo_unico)
     
     # df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: ☐Azul  ☐Amarelo  ☐Cinza  ☐Laranja  ☐Verde  ☐Vermelho\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________" if row['cor'] != 'Cinza' else f"{row['Código']} - {row['Peca']}     {row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nMontagem:__________Data:__________\nSolda:__________Data:__________\nPintura:__________Data:__________", axis=1)
-    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca'][:30]}\n{row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nPintura:__________Data:__________", axis=1)
+    df['Concatenacao'] = df.apply(lambda row: f"{row['Código']} - {row['Peca'][:30]}\n{row['codificacao']}\nCélula: {row['Célula']} Quantidade: {row['sequencia']}        \nCor: {row['cor']}\nPintura:__________Data:{tipo_filtro}", axis=1)
 
     # df_etiquetas_montagem = gerar_etiquetas_montagem(tipo_filtro,df_montagem)
 
