@@ -45,6 +45,9 @@ st.write("https://docs.google.com/spreadsheets/d/18ZXL8n47qSLFLVO5tBj7-ADpqmMyFw
 st.write("Planilha que guarda ordens geradas")
 st.write("https://docs.google.com/spreadsheets/d/1IOgFhVTBtlHNBG899QqwlqxYlMcucTx74zRA29YBHKA/edit#gid=1228486917")
 
+st.write("Planilha para impressão de etiquetas")
+st.write("https://docs.google.com/spreadsheets/d/1jojKHPBKeALheutJyphsPS-LGNu1e2BC54AAqRnF-us/edit?gid=1389272651#gid=1389272651")
+
 name_sheet = 'Bases para sequenciamento'
 
 worksheet1 = 'Base_Carretas'
