@@ -104,7 +104,9 @@ def consultar_carretas(data_inicial, data_final):
     sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN']
 
     dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(
-        lambda x: x[:-3] if str(x)[-2:] in sufixos_para_remover else x)
+        lambda x: x[:-2].rstrip() if str(x)[-2:] in sufixos_para_remover else x
+    )
+
 
     dados_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(dados_carga['PED_PREVISAOEMISSAODOC'])
 
@@ -116,7 +118,7 @@ def consultar_carretas(data_inicial, data_final):
     agrupado = carretas_unica.groupby('PED_RECURSO.CODIGO')['PED_QUANTIDADE'].sum().reset_index()
 
     agrupado['Contém'] = agrupado['PED_RECURSO.CODIGO'].apply(
-        lambda x: '✅' if x in dados_carreta['Recurso'].values else '❌'
+        lambda x: '✅' if x in dados_carreta['Recurso'].astype(str).values else '❌'
     )
 
     resultado = agrupado.values.tolist()
@@ -331,13 +333,12 @@ tipo_filtro = st.date_input('Data: ')
 data_inicio = tipo_filtro
 tipo_filtro = tipo_filtro.strftime("%d/%m/%Y")
 data_inicio = data_inicio.strftime("%Y-%m-%d")
-print('a')
 carretas_na_base = consultar_carretas(data_inicio,data_inicio)
 df = pd.DataFrame(carretas_na_base, columns=['Código Carreta','Quantidade','Contém'])
 
 # Exibir a tabela no Streamlit
 st.write("Tabela de Carretas:")
-st.dataframe(df[['Código Carreta','Quantidade','Contém']],width=400)
+st.dataframe(df[['Código Carreta','Quantidade','Contém']],width=500)
 
 values = ['Selecione','Pintura','Montagem','Solda', 'Serralheria', 'Carpintaria', 'Etiquetas']
 setor = st.selectbox('Escolha o setor', values)
