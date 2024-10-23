@@ -116,7 +116,11 @@ def consultar_carretas(data_inicial, data_final):
         lambda x: x[:-2].rstrip() if str(x)[-2:] in sufixos_para_remover else x
     )
 
-    dados_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(dados_carga['PED_PREVISAOEMISSAODOC'])
+    dados_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(
+        dados_carga['PED_PREVISAOEMISSAODOC'], 
+        format="%d/%m/%Y",  # Dia/Mês/Ano
+        errors='coerce'  # Caso queira tratar erros, como datas inválidas
+    )
 
     dados_carga_data_filtrada = dados_carga[(dados_carga['PED_PREVISAOEMISSAODOC'] >= data_inicial) & (dados_carga['PED_PREVISAOEMISSAODOC'] <= data_final)]
 
