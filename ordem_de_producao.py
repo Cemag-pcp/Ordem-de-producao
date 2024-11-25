@@ -82,6 +82,10 @@ base_carretas, base_carga = get_data_from_sheets()
 
 dados_carga = base_carga
 dados_carreta = base_carretas
+
+dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(lambda x: "0" + str(x) if len(str(x))==5 else str(x))
+dados_carreta['Recurso'] = dados_carreta['Recurso'].apply(lambda x: "0" + str(x) if len(str(x))==5 else str(x))
+
 base_carga = base_carga[['PED_PREVISAOEMISSAODOC','PED_RECURSO.CODIGO', 'PED_QUANTIDADE']]
 base_carga['PED_PREVISAOEMISSAODOC'] = pd.to_datetime(
     base_carga['PED_PREVISAOEMISSAODOC'], format='%d/%m/%Y', errors='coerce')
@@ -108,9 +112,9 @@ today = today.strftime('%d/%m/%Y')
 
 filenames = []
 
-def consultar_carretas(data_inicial, data_final):
+def consultar_carretas(data_inicial, data_final, dados_carga, dados_carreta):
 
-    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN']
+    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN', 'AS']
 
     dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(
         lambda x: x[:-2].rstrip() if str(x)[-2:] in sufixos_para_remover else x
@@ -128,6 +132,8 @@ def consultar_carretas(data_inicial, data_final):
 
     carretas_unica = dados_carga_data_filtrada[['PED_PREVISAOEMISSAODOC','PED_RECURSO.CODIGO','PED_QUANTIDADE']]
     agrupado = carretas_unica.groupby(['PED_PREVISAOEMISSAODOC','PED_RECURSO.CODIGO'])['PED_QUANTIDADE'].sum().reset_index()
+
+    dados_carreta['Recurso'] = dados_carreta['Recurso'].apply(lambda x: "0" + str(x) if len(str(x))==5 else x)
 
     agrupado['Contém'] = agrupado['PED_RECURSO.CODIGO'].apply(
         lambda x: '✅' if x in dados_carreta['Recurso'].astype(str).values else '❌'
@@ -372,7 +378,7 @@ resultado = criar_array_datas(data_inicio, data_fim)
 data_inicio = data_inicio.strftime("%Y-%m-%d")
 data_fim_consulta = data_fim.strftime("%Y-%m-%d")
 data_fim = data_fim.strftime("%d/%m/%Y")
-carretas_na_base = consultar_carretas(data_inicio,data_fim_consulta)
+carretas_na_base = consultar_carretas(data_inicio,data_fim_consulta, dados_carga, dados_carreta)
 df = pd.DataFrame(carretas_na_base, columns=['Data','Código Carreta','Quantidade','Contém'])
 df['Data'] = pd.to_datetime(df['Data']).dt.date
 
@@ -586,10 +592,10 @@ if submit_button:
 
             base_carga = base_carga.reset_index(drop=True)
 
-            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'sem_cor'],
-                                    'cor': ['Azul', 'Verde', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja']})
+            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'sem_cor', 'AS'],
+                                    'cor': ['Azul', 'Verde', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja', 'Azul Sm.']})
 
-            cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV']
+            cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV', 'AS']
 
             base_carga = base_carga.astype(str)
 
@@ -617,9 +623,11 @@ if submit_button:
                 'VM', '')  # Vermelho
             base_carga['Recurso'] = base_carga['Recurso'].str.replace(
                 'AV', '')  # Amarelo
+            base_carga['Recurso'] = base_carga['Recurso'].str.replace(
+                'AS', '')  # Amarelo
 
             base_carga['Recurso'] = base_carga['Recurso'].str.strip()
-            print(base_carga)
+
             datas_unique = pd.DataFrame(base_carga['Datas'].unique())
 
             escolha_data = (base_carga['Datas'] == tipo_filtro)
@@ -633,6 +641,9 @@ if submit_button:
             for i in range(len(filtro_data)):
                 if filtro_data['Recurso'][i][0] == '0':
                     filtro_data['Recurso'][i] = filtro_data['Recurso'][i][1:]
+
+            # tab_completa['Recurso'] = tab_completa['Recurso'].apply(lambda x: "0" + str(x) if len(str(x)) == 5 else x)
+            filtro_data['Recurso'] = filtro_data['Recurso'].apply(lambda x: "0" + str(x)  if len(str(x)) == 5 else x)
 
             tab_completa = pd.merge(filtro_data, base_carretas, on=[
                                     'Recurso'], how='left')
@@ -2202,10 +2213,10 @@ if submit_button:
 
             base_carga = base_carga.reset_index(drop=True)
 
-            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'sem_cor'],
+            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'AS', 'sem_cor'],
                                     'cor': ['Azul', 'Verde', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja']})
 
-            cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV']
+            cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV', 'AS']
 
             base_carga = base_carga.astype(str)
 
