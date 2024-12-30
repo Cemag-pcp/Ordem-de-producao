@@ -772,120 +772,57 @@ if submit_button:
             tab_completa = tab_completa.reset_index(drop=True)
 
             # carga_unique = tab_completa['Carga'].unique()
+            file_counter = 1
+            rows_per_file = 21
 
             # for carga in carga_unique:
             for i in range(len(cor_unique)):
 
-                k = 9
-
-                wb = Workbook()
-                wb = load_workbook('modelo_op_pintura.xlsx')
-                ws = wb.active
-
-                # tabela_filtrada_carga = tab_completa[tab_completa['Carga'] == carga]
+                start_index = 0
 
                 filtro_excel = (tab_completa['cor'] == cor_unique[i])
                 filtrar = tab_completa.loc[filtro_excel]
                 filtrar = filtrar.reset_index(drop=True)
                 filtrar = filtrar.groupby(
-                    ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum().reset_index()
+                    ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']
+                ).sum().reset_index()
                 filtrar.sort_values(by=['Célula'], inplace=True)
                 filtrar = filtrar.reset_index(drop=True)
 
-                if len(filtrar) == 0:
-                    continue
-                else:
-                    if len(filtrar) > 21:
-                        for j in range(0, 21):
+                while start_index < len(filtrar):
+                    # Criar um novo Workbook para cada conjunto de 21 linhas
+                    wb = Workbook()
+                    wb = load_workbook('modelo_op_pintura.xlsx')
+                    ws = wb.active
 
-                            ws['F5'] = cor_unique[i]  # nome da coluna é '0'
-                            ws['AD5'] = datetime.now()  # data de hoje
-                            ws['M4'] = tipo_filtro  # data da carga
-                            ws['B' + str(k)] = filtrar['Recurso_cor'][j]
-                            ws['G' + str(k)] = filtrar['Peca'][j]
-                            ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                            ws['K3'] = consumo_cata
-                            ws['Q3'] = consumo_po
-                            ws['AE3'] = consumo_pu
-                            ws['AN3'] = diluente
-                            # if carga_escolhida != 'Selecione':
-                            #     ws['AH4'] = carga_escolhida
-                            k = k + 1
+                    k = 9  # Início da linha no Excel
 
-                        wb.template = False
-                        wb.save("Pintura " + cor_unique[i] + data_nome_planilha +' 1.xlsx')
+                    # Define o limite superior para as linhas deste arquivo
+                    end_index = min(start_index + rows_per_file, len(filtrar))
 
-                        my_file = "Pintura " + cor_unique[i] + data_nome_planilha +' 1.xlsx'
-                        filenames.append(my_file)
+                    # Escreve os dados no Excel para as linhas entre start_index e end_index
+                    for j in range(start_index, end_index):
+                        ws['F5'] = cor_unique[i]  # nome da coluna é '0'
+                        ws['AD5'] = datetime.now()  # data de hoje
+                        ws['M4'] = tipo_filtro  # data da carga
+                        ws['B' + str(k)] = filtrar['Recurso_cor'][j]
+                        ws['G' + str(k)] = filtrar['Peca'][j]
+                        ws['AD' + str(k)] = filtrar['Qtde_total'][j]
+                        ws['K3'] = consumo_cata
+                        ws['Q3'] = consumo_po
+                        ws['AE3'] = consumo_pu
+                        ws['AN3'] = diluente
+                        k += 1
 
-                        k = 9
+                    # Salvar o arquivo com numeração sequencial
+                    file_name = f"Pintura {cor_unique[i]} {data_nome_planilha} {file_counter}.xlsx"
+                    wb.save(file_name)
+                    filenames.append(file_name)
 
-                        wb = Workbook()
-                        wb = load_workbook('modelo_op_pintura.xlsx')
-                        ws = wb.active
+                    # Incrementar índice e contador de arquivos
+                    start_index = end_index
+                    file_counter += 1
 
-                        filtro_excel = (tab_completa['cor'] == cor_unique[i])
-                        filtrar = tab_completa.loc[filtro_excel]
-                        filtrar = filtrar.reset_index(drop=True)
-                        filtrar = filtrar.groupby(
-                            ['Código', 'Peca', 'Célula', 'Datas', 'Recurso_cor', 'cor']).sum().reset_index()
-                        filtrar.sort_values(by=['Célula'], inplace=True)
-                        filtrar = filtrar.reset_index(drop=True)
-
-                        if len(filtrar) > 21:
-
-                            j = 21
-
-                            for j in range(21, len(filtrar)):
-
-                                ws['F5'] = cor_unique[i]  # nome da coluna é '0'
-                                ws['AD5'] = datetime.now()  # data de hoje
-                                ws['M4'] = tipo_filtro  # data da carga
-                                ws['B' + str(k)] = filtrar['Recurso_cor'][j]
-                                ws['G' + str(k)] = filtrar['Peca'][j]
-                                ws['AD' + str(k)] = filtrar['Qtde_total'][j]    
-                                ws['K3'] = consumo_cata
-                                ws['Q3'] = consumo_po
-                                ws['AE3'] = consumo_pu
-                                ws['AN3'] = diluente
-                                # if carga_escolhida != 'Selecione':
-                                #     ws['AH4'] = carga_escolhida
-
-                                k = k + 1
-
-                            wb.save("Pintura " + cor_unique[i] + data_nome_planilha +'.xlsx')
-
-                        my_file = "Pintura " + cor_unique[i] + data_nome_planilha +'.xlsx'
-                        filenames.append(my_file)
-
-                    else:
-
-                        j = 0
-                        k = 9
-                        for j in range(0, 21-(21-len(filtrar))):
-
-                            ws['F5'] = cor_unique[i]  # nome da coluna é '0'
-                            ws['AD5'] = datetime.now()  # data de hoje
-                            ws['M4'] = tipo_filtro  # data da carga
-                            ws['B' + str(k)] = filtrar['Recurso_cor'][j]
-                            ws['G' + str(k)] = filtrar['Peca'][j]
-                            ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                            ws['K3'] = consumo_cata
-                            ws['Q3'] = consumo_po
-                            ws['AE3'] = consumo_pu
-                            ws['AN3'] = diluente
-                            # if carga_escolhida != 'Selecione':
-                            #     ws['AH4'] = carga_escolhida
-
-                            k = k + 1
-
-                        wb.template = False
-                        wb.save("Pintura " + cor_unique[i] + data_nome_planilha +'.xlsx')
-
-                        k = 9
-
-                        my_file = "Pintura " + cor_unique[i] + data_nome_planilha +'.xlsx'
-                        filenames.append(my_file)
                 
             data_insert_sql = tab_completa[['Célula','Código','Peca','cor','Qtde_total','Datas']]
             data_insert_sql = data_insert_sql.groupby(['Célula','Código','Peca','cor','Datas']).sum().reset_index()[['Célula','Código','Peca','cor','Qtde_total','Datas']]
@@ -1050,161 +987,69 @@ if submit_button:
             # carga_unique = tab_completa['Carga'].unique()
 
             # for carga in carga_unique:
-                
+            file_counter = 1  # Contador de arquivos
+            rows_per_file = 21  # Número máximo de linhas por arquivo
+            k = 9  # Posição inicial no Excel
+
             for i in range(0, len(celulas_unique)):
-                wb = Workbook()
-                wb = load_workbook('modelo_op_montagem.xlsx')
-                ws = wb.active
-
-                # tabela_filtrada_carga = tab_completa[tab_completa['Carga'] == carga]
-
+                # Filtrar os dados para a célula atual
                 filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
-                filtrar = tab_completa.loc[filtro_excel]
-                filtrar.reset_index(inplace=True)
-                filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
-                # filtro_excel = tab_completa[tab_completa['Carga'] == carga]
-                
+                filtrar = tab_completa.loc[filtro_excel].reset_index(drop=True)
+
+                # Verificar se o DataFrame está vazio
                 if filtrar.empty:
                     continue
 
-                if len(filtrar) > 21:
+                # Índice inicial para controle de divisão em blocos
+                start_index = 0
 
-                    for j in range(0, 21):
-                        
-                        # if carga_escolhida != 'Selecione':
-                        #     ws['B3'] = carga_escolhida
-                        
-                        ws['G5'] = celulas_unique[0][i]  # nome da coluna é '0'
-                        ws['AD5'] = hoje  # data de hoje
-                        # código único para cada sequenciamento
-                        ws['AK4'] = celulas_unique[0][i][0:3] + \
-                            codigo_unico + celulas_unique[0][i][:4]
-
-                        if celulas_unique[0][i] == "EIXO COMPLETO":
-                            ws['AK4'] = celulas_unique[0][i][0:3] + \
-                                codigo_unico + "C"
-
-                        if celulas_unique[0][i] == "EIXO SIMPLES":
-                            ws['AK4'] = celulas_unique[0][i][0:3] + \
-                                codigo_unico + "S"
-
-                        else:
-                            # código único para cada sequenciamento
-                            ws['AK4'] = celulas_unique[0][i][0:3] + codigo_unico
-
-                        filtrar = tab_completa.loc[filtro_excel]
-                        filtrar.reset_index(inplace=True)
-
-                        ws['M4'] = tipo_filtro  # data da carga
-                        ws['B' + str(k)] = filtrar['Código'][j]
-                        ws['G' + str(k)] = filtrar['Peca'][j]
-                        ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                        k = k + 1
-
-                    wb.template = False
-                    wb.save('Montagem ' + celulas_unique[0][i] + ' ' + data_nome_planilha +'1.xlsx')
-
-                    my_file = "Montagem " + celulas_unique[0][i] + ' ' + data_nome_planilha +'1.xlsx'
-                    filenames.append(my_file)
-
-                    k = 9
-
+                while start_index < len(filtrar):
+                    # Criar um novo Workbook para cada conjunto de 21 linhas
                     wb = Workbook()
                     wb = load_workbook('modelo_op_montagem.xlsx')
                     ws = wb.active
 
-                    filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
-                    filtrar = tab_completa.loc[filtro_excel]
-                    filtrar.reset_index(inplace=True)
-                    filtro_excel = (tab_completa['Célula'] == celulas_unique[0][i])
+                    # Define o limite superior para as linhas deste arquivo
+                    end_index = min(start_index + rows_per_file, len(filtrar))
+                    k = 9  # Reseta a linha inicial para cada novo arquivo
 
-                    if len(filtrar) > 21:
+                    # Escreve os dados no Excel para as linhas entre start_index e end_index
+                    for j in range(start_index, end_index):
+                        ws['G5'] = celulas_unique[0][i]  # Nome da célula
+                        ws['AD5'] = hoje  # Data de hoje
 
-                        j = 21
-
-                        for j in range(21, len(filtrar)):
-                            
-                            # if carga_escolhida != 'Selecione':
-                            #     ws['B3'] = carga_escolhida
-
-                            ws['G5'] = celulas_unique[0][i]  # nome da coluna é '0'
-                            ws['AD5'] = hoje  # data de hoje
-
-                            if celulas_unique[0][i] == "EIXO COMPLETO":
-                                ws['AK4'] = celulas_unique[0][i][0:3] + \
-                                    codigo_unico + "C"
-
-                            if celulas_unique[0][i] == "EIXO SIMPLES":
-                                ws['AK4'] = celulas_unique[0][i][0:3] + \
-                                    codigo_unico + "S"
-
-                            else:
-                                # código único para cada sequenciamento
-                                ws['AK4'] = celulas_unique[0][i][0:3] + codigo_unico
-
-                            filtrar = tab_completa.loc[filtro_excel]
-                            filtrar.reset_index(inplace=True)
-
-                            ws['M4'] = tipo_filtro  # data da carga
-                            ws['B' + str(k)] = filtrar['Código'][j]
-                            ws['G' + str(k)] = filtrar['Peca'][j]
-                            ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                            k = k + 1
-
-                        wb.template = False
-                        wb.save('Montagem ' + celulas_unique[0][i] + ' ' + data_nome_planilha +'.xlsx')
-
-                        my_file = "Montagem " + celulas_unique[0][i] + ' ' + data_nome_planilha +'.xlsx'
-                        filenames.append(my_file)
-
-                else:
-
-                    j = 0
-                    k = 9
-
-                    for j in range(0, 21-(21-len(filtrar))):
-                        
-                        # if carga_escolhida != 'Selecione':
-                        #     ws['B3'] = carga_escolhida
-
-                        ws['G5'] = celulas_unique[0][i]  # nome da coluna é '0'
-                        ws['AD5'] = hoje  # data de hoje
-
+                        # Gerar código único baseado na célula
                         if celulas_unique[0][i] == "EIXO COMPLETO":
-                            ws['AK4'] = celulas_unique[0][i][0:3] + \
-                                codigo_unico + "C"
-
-                        if celulas_unique[0][i] == "EIXO SIMPLES":
-                            ws['AK4'] = celulas_unique[0][i][0:3] + \
-                                codigo_unico + "S"
-
+                            ws['AK4'] = celulas_unique[0][i][0:3] + codigo_unico + "C"
+                        elif celulas_unique[0][i] == "EIXO SIMPLES":
+                            ws['AK4'] = celulas_unique[0][i][0:3] + codigo_unico + "S"
                         else:
-
-                            # código único para cada sequenciamento
                             ws['AK4'] = celulas_unique[0][i][0:3] + codigo_unico
 
-                        filtrar = tab_completa.loc[filtro_excel]
-                        filtrar.reset_index(inplace=True)
-
-                        ws['M4'] = tipo_filtro  # data da carga
+                        # Preenchimento das células do Excel
+                        ws['M4'] = tipo_filtro  # Data da carga
                         ws['B' + str(k)] = filtrar['Código'][j]
                         ws['G' + str(k)] = filtrar['Peca'][j]
                         ws['AD' + str(k)] = filtrar['Qtde_total'][j]
-                        k = k + 1
+                        k += 1
 
+                    # Salvar o arquivo com numeração sequencial
+                    file_name = f"Montagem {celulas_unique[0][i]} {data_nome_planilha} {file_counter}.xlsx"
                     wb.template = False
-                    wb.save('Montagem ' + celulas_unique[0][i] + ' ' + data_nome_planilha +'.xlsx')
+                    wb.save(file_name)
+                    filenames.append(file_name)
 
-                    k = 9
+                    # Incrementar o índice de início e o contador de arquivos
+                    start_index = end_index
+                    file_counter += 1
 
-                    my_file = "Montagem " + celulas_unique[0][i] + ' ' + data_nome_planilha +'.xlsx'
-                    filenames.append(my_file)
-
-            data_formatada = datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d')
+            # Preparar os dados para inserção no banco de dados
+            data_formatada = datetime.strptime(tipo_filtro, '%d/%m/%Y').strftime('%Y-%m-%d')
             tab_completa['Datas'] = data_formatada
-            data_insert_sql = tab_completa[['Célula','Código','Peca','Qtde_total','Datas']].values.tolist()
-            
-            insert_montagem(datetime.strptime(tipo_filtro,'%d/%m/%Y').strftime('%Y-%m-%d'), data_insert_sql, check_atualizar_base_carga)
+            data_insert_sql = tab_completa[['Célula', 'Código', 'Peca', 'Qtde_total', 'Datas']].values.tolist()
+
+            # Chamar a função de inserção
+            insert_montagem(data_formatada, data_insert_sql, check_atualizar_base_carga)
 
         if setor == 'Solda':   
         
