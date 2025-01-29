@@ -714,30 +714,40 @@ if submit_button:
                 #     tab_completa['Recurso_cor'][t] = tab_completa['Código'][t] + 'CO'
                 #     tab_completa['cor'][t] = 'Cinza'
 
-            contem_cinza = tab_completa['Etapa5'].str.contains('CINZA')
-            
-            tab_completa.loc[contem_cinza, 'Etapa5'] = 'CINZA'
+            # contem_cinza = tab_completa['Etapa5'].str.contains('CINZA')
+            # tab_completa.loc[contem_cinza, 'Etapa5'] = 'CINZA'
 
-            contem_colorido = tab_completa['Etapa5'].str.contains('COLORIDO')
-            
-            tab_completa.loc[contem_colorido, 'Etapa5'] = 'COLORIDO'
+            # contem_colorido = tab_completa['Etapa5'].str.contains('COLORIDO')
+            # tab_completa.loc[contem_colorido, 'Etapa5'] = 'COLORIDO'
 
-            # Defina uma função para aplicar a lógica
-            def definir_recurso_cor(row):
-                if row['Etapa5'] == 'CINZA':
-                    return row['Código'] + 'CO'
+            # contem_preto = tab_completa['Etapa5'].str.contains('PRETO')
+            # tab_completa.loc[contem_preto, 'Etapa5'] = 'PRETO'
+
+            # Normaliza os valores da coluna 'Etapa5' para identificar corretamente as cores
+            tab_completa.loc[tab_completa['Etapa5'].str.contains('CINZA', na=False), 'Etapa5'] = 'CINZA'
+            tab_completa.loc[tab_completa['Etapa5'].str.contains('COLORIDO', na=False), 'Etapa5'] = 'COLORIDO'
+            tab_completa.loc[tab_completa['Etapa5'].str.contains('PRETO', na=False), 'Etapa5'] = 'PRETO'
+
+            # Função para definir a coluna 'Recurso_cor'
+            def definir_recurso_cor(row, corPlanilha, siglaCor):
+                if row['Etapa5'] == corPlanilha:
+                    return row['Código'] + siglaCor
                 else:
                     return row['Código'] + row['Recurso_cor']
 
-            def definir_cor(row):
-                if row['Etapa5'] == 'CINZA':
-                    return 'Cinza'
+            # Função para definir a coluna 'cor'
+            def definir_cor(row, corPlanilha, returnCor):
+                if row['Etapa5'] == corPlanilha:
+                    return returnCor
                 else:
                     return row['cor']
 
-            # Aplique a função à coluna 'RECURSO_COR' usando apply
-            tab_completa['Recurso_cor'] = tab_completa.apply(definir_recurso_cor, axis=1)
-            tab_completa['cor'] = tab_completa.apply(definir_cor, axis=1)
+            # Aplicando as funções corretamente
+            tab_completa['Recurso_cor'] = tab_completa.apply(lambda row: definir_recurso_cor(row, 'CINZA', 'Cinza'), axis=1)
+            tab_completa['cor'] = tab_completa.apply(lambda row: definir_cor(row, 'CINZA', 'Cinza'), axis=1)
+
+            tab_completa['Recurso_cor'] = tab_completa.apply(lambda row: definir_recurso_cor(row, 'PRETO', 'Preto'), axis=1)
+            tab_completa['cor'] = tab_completa.apply(lambda row: definir_cor(row, 'PRETO', 'Preto'), axis=1)
 
             # Consumo de tinta
 
