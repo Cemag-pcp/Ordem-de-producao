@@ -551,6 +551,7 @@ def tratar_conjuntos_iguais(base_carretas,base_carga):
 
     return chassi
 
+
 if submit_button:
     base_carretas_original = base_carretas.copy()
     base_carga_original = base_carga.copy()
@@ -592,10 +593,12 @@ if submit_button:
 
             base_carga = base_carga.reset_index(drop=True)
 
-            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'sem_cor', 'AS'],
-                                    'cor': ['Azul', 'Verde', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja', 'Azul Sm.']})
+            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LJ', 'LC', 'VM', 'AV', 'sem_cor', 'AS', 'CO'],
+                                    'cor': ['Azul', 'Verde', 'Laranja Jacto', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja', 'Azul Sm.', 'Cinza']})
 
-            cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV', 'AS']
+            nome_cor_para_sigla = dict(zip(df_cores['cor'], df_cores['Recurso_cor']))
+
+            cores = ['AM', 'AN', 'VJ', 'LJ', 'LC', 'VM', 'AV', 'AS', 'CO']
 
             base_carga = base_carga.astype(str)
 
@@ -798,7 +801,7 @@ if submit_button:
                 ).sum().reset_index()
                 filtrar.sort_values(by=['Célula'], inplace=True)
                 filtrar = filtrar.reset_index(drop=True)
-
+                print(filtrar)
                 while start_index < len(filtrar):
                     # Criar um novo Workbook para cada conjunto de 21 linhas
                     wb = Workbook()
@@ -812,10 +815,14 @@ if submit_button:
 
                     # Escreve os dados no Excel para as linhas entre start_index e end_index
                     for j in range(start_index, end_index):
+                        
+                        cor_nome = filtrar['cor'][j]
+                        sigla_cor = nome_cor_para_sigla.get(cor_nome, 'sem_cor')
+
                         ws['F5'] = cor_unique[i]  # nome da coluna é '0'
                         ws['AD5'] = datetime.now()  # data de hoje
                         ws['M4'] = tipo_filtro  # data da carga
-                        ws['B' + str(k)] = filtrar['Recurso_cor'][j]
+                        ws['B' + str(k)] = f"{str(filtrar['Código'][j])}{sigla_cor}"
                         ws['G' + str(k)] = filtrar['Peca'][j]
                         ws['AD' + str(k)] = filtrar['Qtde_total'][j]
                         ws['K3'] = consumo_cata
@@ -2068,8 +2075,8 @@ if submit_button:
 
             base_carga = base_carga.reset_index(drop=True)
 
-            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'VJ', 'LC', 'VM', 'AV', 'AS', 'sem_cor'],
-                                    'cor': ['Azul', 'Verde', 'Laranja', 'Vermelho', 'Amarelo', 'Laranja']})
+            df_cores = pd.DataFrame({'Recurso_cor': ['AN', 'LJ', 'VJ', 'LC', 'VM', 'AV', 'AS', 'sem_cor'],
+                                    'cor': ['Azul', 'Verde', 'Laranja Jacto','Laranja', 'Vermelho', 'Amarelo', 'Laranja']})
 
             cores = ['AM', 'AN', 'VJ', 'LC', 'VM', 'AV', 'AS']
 
