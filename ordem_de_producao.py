@@ -114,7 +114,7 @@ filenames = []
 
 def consultar_carretas(data_inicial, data_final, dados_carga, dados_carreta):
 
-    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN', 'AS']
+    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN', 'AS', 'CO']
 
     dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(
         lambda x: x[:-2].rstrip() if str(x)[-2:] in sufixos_para_remover else x
@@ -368,9 +368,12 @@ with st.sidebar:
     st.image(image, width=300)
 
 # tipo_filtro = st.date_input('Data: ')
+data = datetime.strptime('2025-03-21', '%Y-%m-%d').date()
+
 tipo_filtro = st.date_input(
     'Data:',
-    value=(datetime.now(), datetime.now())
+    # value=(datetime.now(), datetime.now())
+    value=(data, data)
 )
 
 data_inicio, data_fim = tipo_filtro
@@ -547,7 +550,6 @@ def tratar_conjuntos_iguais(base_carretas,base_carga):
             tab_completa['Código_y'][i] = '0' + tab_completa['Código_y'][i]   
 
     chassi = tab_completa.rename(columns={'Código_x':'Código','Peca_x':'Peca','Qtde':'Qtde_total','Célula_x':'Célula'})
-
 
     return chassi
 
@@ -871,6 +873,15 @@ if submit_button:
             base_carga['Recurso'] = base_carga['Recurso'].str.replace('VM', '')
             base_carga['Recurso'] = base_carga['Recurso'].str.replace('AV', '')
             base_carga['Recurso'] = base_carga['Recurso'].str.replace('CO', '')
+
+
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('AM', '')
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('AN', '')
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('VJ', '')
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('LC', '')
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('VM', '')
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('AV', '')
+            base_carretas['Recurso'] = base_carretas['Recurso'].str.replace('CO', '')
 
             ###### retirando espaco em branco####
 
