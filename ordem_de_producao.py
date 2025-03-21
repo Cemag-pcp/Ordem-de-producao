@@ -114,7 +114,7 @@ filenames = []
 
 def consultar_carretas(data_inicial, data_final, dados_carga, dados_carreta):
 
-    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN', 'AS', 'CO']
+    sufixos_para_remover = ['AV', 'VM', 'VJ', 'AN', 'AS', 'CO', 'LC', ]
 
     dados_carga['PED_RECURSO.CODIGO'] = dados_carga['PED_RECURSO.CODIGO'].apply(
         lambda x: x[:-2].rstrip() if str(x)[-2:] in sufixos_para_remover else x
@@ -368,7 +368,7 @@ with st.sidebar:
     st.image(image, width=300)
 
 # tipo_filtro = st.date_input('Data: ')
-data = datetime.strptime('2025-03-21', '%Y-%m-%d').date()
+data = datetime.strptime('2025-03-26', '%Y-%m-%d').date()
 
 tipo_filtro = st.date_input(
     'Data:',
@@ -553,13 +553,13 @@ def tratar_conjuntos_iguais(base_carretas,base_carga):
 
     return chassi
 
-
 if submit_button:
     base_carretas_original = base_carretas.copy()
     base_carga_original = base_carga.copy()
     for idx, tipo_filtro in enumerate(resultado):
         data_nome_planilha = tipo_filtro.replace("/","-")[:5]
         base_carretas = base_carretas_original.copy()
+        base_carretas[base_carretas['Recurso'] == '030387']
         base_carga = base_carga_original.copy()
 
         if setor == 'Pintura':
